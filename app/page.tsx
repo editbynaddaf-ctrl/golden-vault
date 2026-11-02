@@ -1,3 +1,4 @@
+import LogoutButton from "./logout-button";
 
 import {redirect} from 'next/navigation';
 import {serverDb} from '../lib/supabase';
@@ -19,7 +20,12 @@ export default async function Home() {
     .single();
 
   if (!profile) {
-    return <main>حساب شما هنوز به بازی اضافه نشده است.</main>;
+    return (
+  <main dir="rtl" style={{ padding: 32, textAlign: "center" }}>
+    <p>حساب شما هنوز به بازی اضافه نشده است.</p>
+    <LogoutButton />
+  </main>
+);
   }
 
   const {data: weekData, error: weekError} =
