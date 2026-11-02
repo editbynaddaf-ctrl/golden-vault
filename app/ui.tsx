@@ -273,7 +273,8 @@ const r = await fetch(
       <div className="nav">
         <h1>👑 GOLDEN VAULT</h1>
 
-        <button
+        <a href="/change-password" className="btn">🔐 تغییر رمز عبور</a>
+<button
           onClick={async () => {
             const { createBrowserClient } = await import('@supabase/ssr');
             const db = createBrowserClient(
