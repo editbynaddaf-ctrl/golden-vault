@@ -1,1 +1,114 @@
-:root{color-scheme:dark}*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 50% -10%,#42351d,#101318 55%);color:#f7f2e8;font-family:Tahoma,Arial,sans-serif}main{max-width:1000px;margin:0 auto;padding:24px 16px 60px}h1,h2,h3{margin:0 0 14px}h1{color:#f2c56e;letter-spacing:1px}p{line-height:1.9;color:#bdb9b0}.card{background:#1c2129;border:1px solid #3e4144;border-radius:17px;padding:20px;margin:15px 0}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(185px,1fr));gap:12px}.keys{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}.key{padding:13px 4px;border:1px solid #65605b;border-radius:10px;text-align:center;background:#292b31}.key.wrong{background:#4a2529;border-color:#ad4b53}.key.correct{background:#214b37;border-color:#47bd77}.muted{color:#a5a29c;font-size:13px}button,input,select{font:inherit}button{background:#e1b45c;color:#1b160c;border:0;border-radius:10px;padding:12px 16px;font-weight:bold;cursor:pointer}button:disabled{opacity:.4;cursor:not-allowed}input,select{background:#12151b;border:1px solid #4b4c4f;border-radius:10px;padding:11px;color:white;max-width:100%;width:100%}label{display:block;margin:12px 0 5px}.actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.danger{color:#ff9a9a}.success{color:#8ce2b0}.pill{display:inline-block;padding:7px 12px;border-radius:50px;background:#36312b;color:#f5ca79}.line{border-top:1px solid #3d4147;margin:15px 0}.notice{background:#332c1c;border-radius:10px;padding:12px;margin-top:12px}.nav{display:flex;justify-content:space-between;gap:10px;align-items:center}.mini{font-size:12px;color:#bcb8ad}
+/* GOLDEN VAULT ROYAL UI — theme only, no game logic changes */
+:root{color-scheme:dark;--gv-gold:#e9b85f;--gv-gold2:#f7d990;--gv-text:#f8ebd4;--gv-muted:#ad9c80;--gv-edge:#584326;--gv-panel:#1c1a17}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 65% 0%,#322517 0,#111110 36%,#0a0b0d 76%);color:var(--gv-text);font-family:Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+h1,h2,h3{color:#f3d69c;line-height:1.2;margin:0 0 15px}h1,h2{font-family:Georgia,'Times New Roman',serif}h1{letter-spacing:.06em}h2{font-size:23px}h3{font-size:18px}p{color:#bdb09b;line-height:1.7}a{color:#f1c878}button,input,select{font:inherit}button{border:1px solid #c18b37;border-radius:10px;background:linear-gradient(135deg,#f8d787,#c28a3c);padding:11px 15px;color:#261b0a;font-weight:750;cursor:pointer;transition:filter .2s,border-color .2s,transform .2s}button:hover:not(:disabled){filter:brightness(1.12)}button:active:not(:disabled){transform:scale(.99)}button:disabled{opacity:.42;cursor:not-allowed}input,select{width:100%;max-width:100%;border:1px solid #5a4933;background:#111314;border-radius:9px;color:#f5e6cb;padding:11px 13px;min-height:43px}input:focus-visible,select:focus-visible,button:focus-visible,a:focus-visible{outline:2px solid #fac86c;outline-offset:2px}label{display:block;color:#c7bba8;font-size:13px;margin:12px 0 5px}.card{background:linear-gradient(145deg,#211d18,#161717 78%);border:1px solid #514028;border-radius:15px;padding:19px;margin:14px 0;box-shadow:0 7px 24px #0002}.card .card{background:#171715;border-color:#514029}.card:has(>h2){margin-top:18px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(185px,1fr));gap:13px}.grid>.card{margin:0;min-height:122px;display:flex;flex-direction:column;justify-content:center}.grid>.card h2{font-size:27px;color:#f1c471}.keys{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:9px}.key{min-height:47px;display:grid;place-items:center;background:linear-gradient(135deg,#322619,#1b1916);color:#f7ce82;border:1px solid #715332;border-radius:10px;font-weight:750;font-size:14px}.key.wrong{background:#39201f;border-color:#984b45;color:#ef9d8e}.key.correct{background:#173a2d;border-color:#3c986b;color:#a0eec0}.muted{color:#a89a83;font-size:12px}.mini{font-size:11px;color:#b6a68e}.actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center}.actions button{flex:1 1 150px}.danger{color:#ff9992}.success{color:#89dfb2}.pill{display:inline-block;padding:6px 11px;color:#f4c67d;background:#392a17;border:1px solid #79552a;border-radius:999px}.line{border-top:1px solid #433624;margin:18px 0}.notice{background:#362816;border:1px solid #98703b;border-radius:12px;padding:13px;margin:14px 0;color:#f3d292}
+.gv-royal-shell{display:grid;grid-template-columns:205px minmax(0,1fr);min-height:100vh}.gv-royal-sidebar{position:sticky;top:0;align-self:start;height:100vh;background:linear-gradient(160deg,#201a14,#101010 65%);border-right:1px solid #48351c;padding:25px 14px;display:flex;flex-direction:column;gap:28px}.gv-brand{display:flex;align-items:center;gap:10px;font:700 16px Georgia,serif;color:#ffd78c;letter-spacing:.08em}.gv-brand em{font-style:normal;color:#bd8d47}.gv-brand small{display:block;color:#8f7855;font:500 9px Inter,sans-serif;letter-spacing:2px;margin-top:7px}.gv-brand-symbol{font-size:37px;color:#e5b967}.gv-menu{display:grid;gap:7px}.gv-menu a{display:flex;align-items:center;gap:13px;padding:13px 11px;border:1px solid transparent;border-radius:10px;color:#b8ab96;text-decoration:none;font-size:12px;font-weight:650}.gv-menu a:hover,.gv-menu a:first-child{background:linear-gradient(90deg,#3b2a17,#201c17);border-color:#6a4c27;color:#f5c676}.gv-menu a span{font-size:20px}.gv-side-note{margin-top:auto;border:1px solid #584329;border-radius:12px;background:#241b13;padding:12px;color:#a38d6b;font-size:10px}.gv-side-note strong{display:block;color:#f2c97e;font-size:15px;margin:6px 0}.gv-side-note span{display:block;line-height:1.5}.gv-royal-main{width:100%;max-width:1050px;padding:26px 27px 90px;margin:0 auto;min-width:0}.gv-topnav{display:flex;align-items:center;flex-wrap:wrap;gap:12px;border-bottom:1px solid #4c3b25;padding-bottom:17px;margin-bottom:20px}.gv-topnav h1{flex:1;font-size:22px;margin:0}.gv-topnav>a{font-size:12px;text-decoration:none;border:1px solid #624926;border-radius:9px;padding:11px 12px}.gv-topnav button{background:#302418;border:1px solid #85632f;color:#f2c778;font-size:12px}.gv-hero{min-height:185px;border:1px solid #976c30;background:radial-gradient(circle at 83% 50%,#63401c 0,#34220f 24%,#211b14 55%,#151311 100%);box-shadow:inset 0 0 45px #0008,0 10px 30px #0003;border-radius:18px;display:flex;align-items:center;justify-content:space-between;gap:15px;padding:24px;overflow:hidden}.gv-hero-copy{position:relative;z-index:1}.gv-eyebrow{font-size:10px;letter-spacing:2px;font-weight:800;color:#eac17e}.gv-hero h2{font-size:clamp(25px,4vw,38px);color:#ffdda2;margin:10px 0}.gv-hero p{margin:0 0 13px;font-size:12px;color:#c7b393}.gv-hero-team{display:inline-block;border:1px solid #8b6638;border-radius:50px;background:#3a2815;padding:6px 13px;color:#f7d595;font-size:11px;font-weight:700}.gv-hero-crest{flex:0 0 140px;width:140px;height:140px;border-radius:50%;display:grid;place-items:center;color:#f6d28a;font:90px Georgia,serif;background:radial-gradient(circle,#88551e 5%,#3d2813 42%,#18140e 70%);border:2px solid #ae7c31;box-shadow:0 0 43px #f3b7414d,inset 0 0 30px #f5c15d35}.gv-mobile-dock{display:none}
+/* Gold edges for nested game cards and premium store */
+.gv-royal-main .card button{font-size:12px}.gv-royal-main .card>.card{margin:11px 0}.gv-royal-main .card strong{color:#f2c979}.gv-royal-main .card .keys+ p{margin-top:12px}.gv-royal-main #gv-vault,.gv-royal-main #gv-events,.gv-royal-main #gv-command{scroll-margin-top:25px}.gv-royal-main .nav+.gv-hero+p{color:#e9c783;font-weight:600;font-size:13px;margin:18px 0}.gv-royal-main .card:has(>h2[id]){border-color:#73562f}
+/* Login, account and password pages */
+body>main{max-width:540px;margin:8vh auto 0;padding:26px}.gv-royal-shell+main{margin:0}.gv-royal-main input[type=checkbox]{min-height:auto;width:auto;accent-color:#e6b85c}
+@media(max-width:750px){.gv-royal-shell{display:block}.gv-royal-sidebar{display:none}.gv-royal-main{padding:18px 14px 105px}.gv-mobile-dock{display:flex;position:fixed;bottom:0;left:0;right:0;z-index:20;align-items:center;justify-content:space-around;padding:10px 6px max(12px,env(safe-area-inset-bottom));background:linear-gradient(#1f1a14,#101010);border-top:1px solid #70522f;box-shadow:0 -12px 36px #0009}.gv-mobile-dock a{display:flex;flex-direction:column;align-items:center;gap:4px;text-decoration:none;color:#d2b98d;font-size:10px}.gv-mobile-dock a span{font-size:23px;color:#f4c978}.gv-topnav h1{flex-basis:100%;font-size:20px}.gv-topnav>a,.gv-topnav button{flex:1;text-align:center}.gv-hero{min-height:150px;padding:17px}.gv-hero h2{font-size:27px}.gv-hero-crest{flex-basis:91px;width:91px;height:91px;font-size:54px}.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.grid>.card{padding:15px}.grid>.card h2{font-size:21px}.keys{grid-template-columns:repeat(5,minmax(0,1fr))}.card{padding:14px}.gv-royal-main .card h2{font-size:20px}.gv-royal-main .card .card{padding:12px}.gv-royal-main .card>.actions button{flex-basis:calc(50% - 10px)}body>main{margin:25px auto;padding:20px}}
+@media(max-width:365px){.gv-hero-crest{flex-basis:72px;width:72px;height:72px;font-size:43px}.gv-hero h2{font-size:24px}.grid>.card h2{font-size:19px}}
+@font-face {
+  font-family: 'Modam';
+  src: url('/fonts/modam/ModamWeb-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Modam';
+  src: url('/fonts/modam/ModamWeb-Medium.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Modam';
+  src: url('/fonts/modam/ModamWeb-SemiBold.woff2') format('woff2');
+  font-weight: 600;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Modam';
+  src: url('/fonts/modam/ModamWeb-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Modam';
+  src: url('/fonts/modam/ModamWeb-ExtraBold.woff2') format('woff2');
+  font-weight: 800;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Modam';
+  src: url('/fonts/modam/ModamWeb-Black.woff2') format('woff2');
+  font-weight: 900;
+  font-style: normal;
+}
+html, body {
+  font-family: 'Modam', sans-serif;
+  direction: rtl;
+}
+
+button, input, select, textarea {
+  font-family: 'Modam', sans-serif;
+}
+h1, .main-title {
+  font-weight: 900;
+}
+
+h2, .section-title {
+  font-weight: 800;
+}
+
+.card-title, .btn, .badge {
+  font-weight: 700;
+}
+
+body, input, button, textarea {
+  font-weight: 500;
+}
+
+html, body {
+  font-family: 'Modam', sans-serif;
+  direction: rtl;
+}
+
+button, input, select, textarea {
+  font-family: 'Modam', sans-serif;
+}
+/* GOLDEN VAULT — Modam Font Fix */
+
+html,
+body,
+.gv-royal-shell,
+.gv-royal-main,
+.gv-royal-sidebar,
+.gv-hero,
+.card,
+h1, h2, h3, h4, h5, h6,
+p, span, label, a,
+button, input, select, textarea {
+  font-family: 'Modam', sans-serif !important;
+}
+
+/* Main headings */
+.gv-hero h2,
+.gv-royal-main h1,
+.gv-royal-main h2,
+.gv-royal-main h3 {
+  font-family: 'Modam', sans-serif !important;
+  font-weight: 800;
+}
+
+/* Buttons */
+button,
+.btn {
+  font-family: 'Modam', sans-serif !important;
+  font-weight: 700;
+}

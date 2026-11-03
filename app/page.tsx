@@ -21,8 +21,8 @@ export default async function Home() {
 
   if (!profile) {
     return (
-  <main dir="rtl" style={{ padding: 32, textAlign: "center" }}>
-    <p>حساب شما هنوز به بازی اضافه نشده است.</p>
+  <main dir="ltr" style={{ padding: 32, textAlign: "center" }}>
+    <p>Your account has not been assigned to the game yet.</p>
     <LogoutButton />
   </main>
 );

@@ -54,7 +54,7 @@ export default function Dashboard({
     try {
       const r = await fetch('/api/vault-final', { cache: 'no-store' });
       const j = await r.json();
-      if (!r.ok) { setFinalError(j.error || 'خطا در دریافت فینال'); return; }
+      if (!r.ok) { setFinalError(j.error || 'خطا در دریافت وضعیت فینال'); return; }
       setFinalInfo(j);
       setFinalError('');
     } catch { setFinalError('ارتباط با سرور فینال برقرار نشد'); }
@@ -93,7 +93,7 @@ export default function Dashboard({
       const response = await fetch('/api/leaderboard', { cache: 'no-store' });
       const data = await response.json();
       if (!response.ok) {
-        setRankingError(data.error ?? 'خطا در بارگذاری رتبه‌بندی');
+        setRankingError(data.error ?? 'خطا در دریافت جدول رتبه‌بندی');
         return;
       }
       setRankings(data);
@@ -112,9 +112,9 @@ export default function Dashboard({
     try {
       const r = await fetch('/api/daily-settlement',{cache:'no-store'});
       const j = await r.json();
-      if (!r.ok) {setSettlementError(j.error || 'خطا در گزارش روزانه'); return;}
+      if (!r.ok) {setSettlementError(j.error || 'خطا در دریافت گزارش روزانه'); return;}
       setSettlementDays(j.days ?? []); setSettlementError('');
-    } catch {setSettlementError('ارتباط با سرور تسویه برقرار نشد');}
+    } catch {setSettlementError('ارتباط با سرویس تسویه برقرار نشد');}
   }
   useEffect(() => {if (profile.is_admin && week) void loadSettlementDays();},[profile.is_admin,week?.id]);
   async function settlementAction(action:'lock_day'|'resolve_day'|'settle_day',day:string) {
@@ -127,7 +127,7 @@ export default function Dashboard({
         body:JSON.stringify({action,day})
       });
       const j=await r.json();
-      if (!r.ok) setSettlementError(j.error || 'خطا در ثبت عملیات');
+      if (!r.ok) setSettlementError(j.error || 'عملیات انجام نشد');
       else {setMessage(j.message || 'انجام شد'); await loadSettlementDays();}
     } catch {setSettlementError('ارتباط با سرور برقرار نشد');}
     finally {setSettlementBusy(false);}
@@ -269,9 +269,22 @@ const r = await fetch(
   }
 
   return (
-    <main>
-      <div className="nav">
-        <h1>👑 GOLDEN VAULT</h1>
+    <div className="gv-royal-shell" id="gv-dashboard" dir="rtl">
+      <aside className="gv-royal-sidebar" aria-label="منوی اصلی">
+        <div className="gv-brand"><span className="gv-brand-symbol">♛</span><div>GOLDEN <em>VAULT</em><small>بازی استراتژیک فروش</small></div></div>
+        <nav className="gv-menu">
+          <a href="#gv-dashboard"><span>⌂</span> داشبورد</a>
+          <a href="#gv-player"><span>♜</span> تیم و نقش</a>
+          <a href="#gv-vault"><span>⚿</span> کلیدهای صندوق</a>
+          <a href="#gv-command"><span>⚒</span> عملیات و فروشگاه</a>
+          <a href="#gv-events"><span>✦</span> رویدادها</a>
+        </nav>
+        <div className="gv-side-note">GOLDEN VAULT <strong>بازی فعال</strong><span>عملیات ساعت ۱۰ صبح به وقت تهران قفل می‌شود</span></div>
+      </aside>
+      <main className="gv-royal-main">
+
+      <div className="nav gv-topnav">
+        <h1>⚜ GOLDEN VAULT</h1>
 
         <a href="/change-password" className="btn">🔐 تغییر رمز عبور</a>
 <button
@@ -285,18 +298,27 @@ const r = await fetch(
             location.href = '/login';
           }}
         >
-          خروج
+          خروج از حساب
         </button>
       </div>
 
+      <section className="gv-hero" id="gv-player">
+        <div className="gv-hero-copy">
+          <span className="gv-eyebrow">♛ نقش محرمانه شما</span>
+          <h2>{profile.is_admin ? 'مدیر بازی' : ({commander:'فرمانده',thief:'سارق',killer:'قاتل',guardian:'محافظ',spy:'جاسوس'} as Record<string,string>)[role || ''] || 'بازیکن'}</h2>
+          <p>{profile.is_admin ? 'مدیریت رقابت و برگزاری مراسم نهایی صندوق' : 'استراتژی، رقابت و یک صندوق طلایی برای فتح کردن'}</p>
+          <span className="gv-hero-team">⚜ {team?.name || 'Golden Vault'}</span>
+        </div>
+        <div className="gv-hero-crest" aria-hidden="true">♛</div>
+      </section>
       <p>
-        سلام {profile.name} ·{' '}
+        سلام، {profile.name} ·{' '}
         {profile.is_admin ? 'مدیر بازی' : team?.name || 'بازیکن'}
       </p>
 
       {profile.is_admin && (
         <div className="card">
-          <h2>🧑‍💼 مدیریت تیم‌ها و حساب بازیکنان</h2>
+          <h2 id="gv-command">⚙ مدیریت تیم‌ها و حساب بازیکنان</h2>
 
           {teams.length === 0 ? (
             <button disabled={busy} onClick={() => act('create_teams')}>
@@ -309,7 +331,7 @@ const r = await fetch(
           )}
 
           <p className="muted">
-            نام، ایمیل، رمز اولیه و تیم بازیکن را مشخص کن.
+            نام، ایمیل، رمز اولیه و تیم بازیکن را مشخص کنید.
             حساب بدون دعوت‌نامه ساخته می‌شود.
           </p>
 
@@ -328,7 +350,7 @@ const r = await fetch(
             placeholder="player@example.com"
           />
 
-          <label>رمز عبور اولیه (حداقل ۱۲ کاراکتر)</label>
+          <label>رمز اولیه (حداقل ۱۲ کاراکتر)</label>
           <input
             type={showPassword ? 'text' : 'password'}
             autoComplete="new-password"
@@ -372,12 +394,12 @@ const r = await fetch(
                 })
               }
             >
-              ساخت مستقیم حساب بازیکن
+              ساخت حساب بازیکن
             </button>
           </p>
 
           <div className="card">
-            <h3>🔍 بررسی علت غیرفعال بودن دکمه</h3>
+            <h3>🔍 بررسی شرایط ساخت حساب</h3>
 
             <p>نام وارد شده: {debug.name ? '✅' : '❌'}</p>
             <p>ایمیل وارد شده: {debug.email ? '✅' : '❌'}</p>
@@ -389,19 +411,19 @@ const r = await fetch(
               هفته فعال وجود ندارد: {!debug.week ? '✅' : '❌'}
             </p>
             <p>
-              سیستم آماده پردازش است: {!debug.busy ? '✅' : '❌'}
+              آماده ثبت: {!debug.busy ? '✅' : '❌'}
             </p>
 
             <p className={canCreatePlayer ? 'success' : 'danger'}>
               {canCreatePlayer
-                ? '✅ دکمه باید فعال باشد.'
-                : '❌ یک یا چند شرط ساخت حساب کامل نیست.'}
+                ? '✅ آماده ساخت حساب بازیکن'
+                : '❌ ابتدا تمام شرایط را کامل کنید'}
             </p>
           </div>
 
           <p className="muted">
-            {people.length} از ۱۰ بازیکن ثبت‌شده.
-            تا قبل از شروع هفته می‌توان حساب ساخت.
+            {people.length} بازیکن از ۱۰ بازیکن ثبت‌شده.
+            حساب‌ها را می‌توان قبل از شروع هفته ایجاد کرد.
           </p>
 
           {teams.map(t => (
@@ -410,7 +432,7 @@ const r = await fetch(
               {people
                 .filter(p => p.team_id === t.id)
                 .map(p => p.name)
-                .join('، ') || 'هنوز بازیکنی ندارد'}
+                .join('، ') || 'هنوز بازیکنی ثبت نشده'}
             </div>
           ))}
         </div>
@@ -418,11 +440,11 @@ const r = await fetch(
 
       {!week ? (
         <div className="card">
-          <h2>هنوز هفته فعالی وجود ندارد.</h2>
+          <h2>هنوز هفته فعالی برای بازی وجود ندارد.</h2>
 
           {profile.is_admin && (
             <>
-              <p>ابتدا دو تیم و تمام ده بازیکن را کامل کن.</p>
+              <p>ابتدا دو تیم و هر ده بازیکن را ثبت کنید.</p>
 
               <button
                 disabled={
@@ -451,13 +473,13 @@ const r = await fetch(
                   ? 'مدیر بازی'
                   : (
                       {
-                        commander: '👑 فرمانده',
+                        commander: '♛ فرمانده',
                         thief: '🥷 سارق',
                         killer: '⚔️ قاتل',
                         guardian: '🛡️ محافظ',
                         spy: '👁️ جاسوس'
                       } as Record<string, string>
-                    )[role || ''] || 'در انتظار قرعه‌کشی'}
+                    )[role || ''] || 'در انتظار قرعه‌کشی نقش‌ها'}
               </h2>
             </div>
 
@@ -469,29 +491,29 @@ const r = await fetch(
 
           {(profile.is_admin || role === 'commander') && (
             <div className="card">
-              <h2>🏆 مراسم فینال صندوق طلایی</h2>
+              <h2>🏆 مراسم نهایی صندوق طلایی</h2>
               {finalError && <p className="danger">{finalError}</p>}
               {!finalInfo?.final ? (
                 <>
-                  <p className="muted">مراسم هنوز توسط مدیر آغاز نشده است.</p>
+                  <p className="muted">مراسم نهایی هنوز آغاز نشده است.</p>
                   {profile.is_admin && (
                     <>
-                      <p>جمع فروش ثبت‌شده (میلیون تومان):</p>
+                      <p>فروش ثبت‌شده (میلیون تومان):</p>
                       {(finalInfo?.sales ?? []).map(sale => (
                         <p key={sale.team_id}>{teams.find(t => t.id === sale.team_id)?.name ?? 'تیم'}: {sale.amount_million}</p>
                       ))}
-                      <p className="muted">شروع مراسم تنها از پنجشنبه و پس از تسویه کامل روزها مجاز است.</p>
+                      <p className="muted">مراسم نهایی از پنجشنبه و بعد از تسویه کامل روزها قابل شروع است.</p>
                       <button disabled={finalBusy} onClick={() => {
                         if (window.confirm('مراسم فینال صندوق شروع شود؟')) void finalAction('open_final');
-                      }}>🎬 شروع مراسم فینال</button>
+                      }}>🎬 شروع مراسم نهایی</button>
                     </>
                   )}
                 </>
               ) : (
                 <>
-                  <p>وضعیت: {finalInfo.final.status === 'open' ? '🔓 مراسم در جریان' : finalInfo.final.status === 'won' ? '🏆 صندوق باز شد' : '📦 جایزه به هفته بعد منتقل می‌شود'}</p>
-                  <p>تیم شروع‌کننده: {teams.find(t => t.id === finalInfo.final?.first_team_id)?.name ?? 'نامشخص'}</p>
-                  <p>تلاش‌های ثبت‌شده: {finalInfo.total_attempts} از ۶</p>
+                  <p>وضعیت: {finalInfo.final.status === 'open' ? '🔓 مراسم در جریان است' : finalInfo.final.status === 'won' ? '🏆 صندوق باز شد' : '📦 جایزه به هفته بعد منتقل شد'}</p>
+                  <p>تیم آغازکننده: {teams.find(t => t.id === finalInfo.final?.first_team_id)?.name ?? 'نامشخص'}</p>
+                  <p>تلاش‌ها: {finalInfo.total_attempts} از ۶</p>
                   {teams.map(t => <p key={t.id}>{t.name}: {finalInfo.counts[t.id] ?? 0} از ۳ تلاش</p>)}
                   {finalInfo.final.status === 'won' && <p className="success">برنده: {teams.find(t => t.id === finalInfo.final?.winner_team_id)?.name ?? 'تیم برنده'}</p>}
                   {finalInfo.final.status === 'open' && (
@@ -506,25 +528,25 @@ const r = await fetch(
                           <button disabled={finalBusy} onClick={() => {
                             if (window.confirm(`تلاش با کلید ${finalKey} ثبت شود؟ این تلاش از سهمیه فینال کم می‌کند.`))
                               void finalAction('attempt_key');
-                          }}>🗝️ امتحان کلید در فینال</button>
+                          }}>🗝️ امتحان کلید صندوق</button>
                         </>
                       )}
                     </>
                   )}
                 </>
               )}
-              <button disabled={finalBusy} onClick={() => void loadFinal()}>🔄 تازه‌سازی وضعیت فینال</button>
+              <button disabled={finalBusy} onClick={() => void loadFinal()}>↻ به‌روزرسانی وضعیت فینال</button>
             </div>
           )}
 
           <div className="card">
-            <h2>🏅 سکه‌های فروش و رتبه بازیکنان</h2>
-            <p className="muted">مربوط به هفته فعال؛ فقط سکه‌های حاصل از فروش و پاداش تارگت/تاپ‌سلر. خریدها، اعتبار آزمایشی و انتقالات نقش‌ها در این رتبه‌بندی محاسبه نمی‌شوند.</p>
+            <h2>🏅 سکه‌های فروش و رتبه‌بندی</h2>
+            <p className="muted">مخصوص هفته فعال؛ شامل سکه‌های پایه فروش و پاداش تارگت و تاپ‌سلر، بدون محاسبه خریدها و انتقال سکه.</p>
             {rankingError && <p className="danger">{rankingError}</p>}
             {!profile.is_admin && rankings?.self && (
               <div className="card">
                 <h3>🪙 {rankings.self.earned_coins} سکه کسب‌شده توسط شما</h3>
-                <p>رتبه شما در تیم: <strong>{rankings.self.team_rank} از ۵</strong></p>
+                <p>رتبه شما در تیم: <strong>{rankings.self.team_rank} / 5</strong></p>
                 <p>فروش ثبت‌شده: {rankings.self.amount_million} میلیون تومان</p>
                 <p>سکه پایه: {rankings.self.base_coins} · پاداش‌ها: {rankings.self.bonus_coins}</p>
               </div>
@@ -544,35 +566,35 @@ const r = await fetch(
                 ))}
               </>
             )}
-            <button onClick={() => void loadRankings()}>🔄 تازه‌سازی رتبه‌بندی</button>
+            <button onClick={() => void loadRankings()}>↻ به‌روزرسانی رتبه‌بندی</button>
           </div>
 
           {profile.is_admin && (
             <div className="card">
               <h2>🧾 مدیریت تسویه روزانه</h2>
-              <p className="muted">هر روز ابتدا پس از ساعت ۱۰ تهران قفل می‌شود، سپس عملیات نقش‌ها پردازش و پس از ثبت فروش هر ۱۰ نفر تسویه می‌شود. برای روزهای عقب‌افتاده از قدیمی‌ترین روز شروع کن.</p>
+              <p className="muted">بعد از ساعت ۱۰ صبح تهران، عملیات روز را قفل کنید، نقش‌ها را پردازش کنید و پس از ثبت فروش هر ۱۰ نفر تسویه را انجام دهید. ابتدا روزهای قدیمی‌تر را رسیدگی کنید.</p>
               {settlementError && <p className="danger">{settlementError}</p>}
               {settlementDays.map(d => (
                 <div key={d.day} className="card">
                   <strong>{d.day}</strong>
                   <p>فروش ثبت‌شده: {d.submitted} از {d.expected} نفر</p>
-                  <p>وضعیت: {d.round_status === 'settled' ? '✅ تسویه‌شده' : d.round_status === 'locked' ? '🔒 قفل‌شده' : '⏳ هنوز قفل نشده'}</p>
+                  <p>وضعیت: {d.round_status === 'settled' ? '✅ تسویه شده' : d.round_status === 'locked' ? '🔒 قفل شده' : '⏳ قفل نشده'}</p>
                   <p>عملیات در انتظار: {d.pending_operations}</p>
                   {d.round_status !== 'settled' && <div className="actions">
-                    {d.round_status !== 'locked' && <button disabled={settlementBusy} onClick={() => void settlementAction('lock_day',d.day)}>🔒 قفل روز</button>}
+                    {d.round_status !== 'locked' && <button disabled={settlementBusy} onClick={() => void settlementAction('lock_day',d.day)}>🔒 قفل کردن روز</button>}
                     {d.round_status === 'locked' && <button disabled={settlementBusy} onClick={() => void settlementAction('resolve_day',d.day)}>⚔️ پردازش نقش‌ها</button>}
                     {d.round_status === 'locked' && d.submitted === d.expected && d.pending_operations === 0 &&
-                      <button disabled={settlementBusy} onClick={() => void settlementAction('settle_day',d.day)}>🪙 تسویه مالی روز</button>}
+                      <button disabled={settlementBusy} onClick={() => void settlementAction('settle_day',d.day)}>🪙 تسویه سکه‌ها</button>}
                   </div>}
                 </div>
               ))}
-              <button disabled={settlementBusy} onClick={() => void loadSettlementDays()}>🔄 تازه‌سازی وضعیت روزها</button>
-              <p className="muted">نمایش دکمه تسویه تضمین‌کننده آمادگی نیست؛ کنترل نهایی داخل تابع امن دیتابیس انجام می‌شود.</p>
+              <button disabled={settlementBusy} onClick={() => void loadSettlementDays()}>↻ به‌روزرسانی وضعیت روزها</button>
+              <p className="muted">پایگاه داده قبل از اعمال تغییرات، شرایط تسویه را بررسی می‌کند.</p>
             </div>
           )}
 
           <div className="card">
-            <h2>🗝️ نقشه ۲۰ کلیدی تیم</h2>
+            <h2 id="gv-vault">⚿ صندوق تیم · ۲۰ کلید</h2>
 
             <div className="keys">
               {Array.from({ length: 20 }, (_, i) => i + 1).map(n => {
@@ -602,12 +624,12 @@ const r = await fetch(
             </div>
 
             <p className="mini">
-              اطلاعات کلیدهای حریف محرمانه است.
+              اطلاعات کلیدهای تیم حریف محرمانه می‌ماند.
             </p>
           </div>
 
           <div className="card">
-            <h2>📣 اطلاعیه‌های عمومی</h2>
+            <h2 id="gv-events">✦ اطلاعیه‌های عمومی</h2>
             {events.length ? (
               events.map((e, i) => <p key={i}>{e.message}</p>)
             ) : (
@@ -617,7 +639,7 @@ const r = await fetch(
 
           {role === 'commander' && (
             <div className="card">
-              <h2>👑 اتاق فرماندهی</h2>
+              <h2 id="gv-command">♛ اتاق فرماندهی</h2>
               
 <div className="card">
   <div className="card">
@@ -630,7 +652,7 @@ const r = await fetch(
       <div className="card" key={item.id}>
         <strong>
           {{
-            team_shield: '🛡️ سپر محافظ',
+            team_shield: '🛡️ سپر تیمی',
             key_duel: '⚔️ دوئل کلیدها',
             three_key_scanner: '🔍 اسکنر سه کلید',
             parity_oracle: '🔮 گوی پیشگو'
@@ -642,8 +664,8 @@ const r = await fetch(
             item.status === 'owned'
               ? '📦 آماده فعال‌سازی'
               : item.status === 'scheduled'
-                ? '⏳ برنامه‌ریزی‌شده'
-                : '✅ مصرف‌شده'
+                ? '⏳ برنامه‌ریزی شده'
+                : '✅ مصرف شده'
           }
         </p>
 
@@ -669,7 +691,7 @@ const r = await fetch(
           <div>
             {item.code !== 'parity_oracle' && (
               <div>
-                <p className="muted">شماره کلیدهای موردنظر را انتخاب کن:</p>
+                <p className="muted">شماره کلیدها را انتخاب کنید:</p>
                 {Array.from({ length: item.code === 'key_duel' ? 2 : 3 }, (_, index) => (
                   <label key={index}>
                     کلید {index + 1}
@@ -730,21 +752,20 @@ const r = await fetch(
         )}
 
         {item.activation_day && (
-          <p>روز فعال‌سازی: {item.activation_day}</p>
+          <p>تاریخ فعال‌سازی: {item.activation_day}</p>
         )}
       </div>
     ))
   )}
 </div>
-  <h3>🛒 فروشگاه تجهیزات فرمانده</h3>
+  <h3>🛒 فروشگاه تجهیزات</h3>
 
   <p className="muted">
-    خرید تجهیزات در تمام ساعات شبانه‌روز امکان‌پذیر است.
-    هر تجهیز فقط یک بار در هر هفته قابل خرید است.
+    خرید تجهیزات در تمام ساعات ممکن است. هر تیم در هر هفته از هر نوع تجهیز فقط یک بار می‌تواند خرید کند.
   </p>
 
   {[
-    { code: 'team_shield', title: '🛡️ سپر محافظ', price: 30 },
+    { code: 'team_shield', title: '🛡️ سپر تیمی', price: 30 },
     { code: 'key_duel', title: '⚔️ دوئل کلیدها', price: 60 },
     { code: 'three_key_scanner', title: '🔍 اسکنر سه کلید', price: 70 },
     { code: 'parity_oracle', title: '🔮 گوی پیشگو', price: 90 },
@@ -806,17 +827,17 @@ const r = await fetch(
 
           {['thief', 'killer', 'guardian', 'spy'].includes(role || '') && (
             <div className="card">
-              <h2>⚡ قدرت ویژه</h2>
+              <h2 id="gv-command">⚡ قدرت ویژه شما</h2>
 
               <p>
                 {role === 'guardian'
-  ? 'هر روز قبل از ساعت ۱۰ صبح از یک هم‌تیمی محافظت کن.'
+  ? 'هر روز قبل از ساعت ۱۰ صبح تهران از یکی از هم‌تیمی‌ها محافظت کنید.'
   : role === 'spy'
-    ? '۳ شناسایی نقش در هفته، حداکثر روزی یک بار؛ بررسی کلید و تجهیزات هم سهمیه جداگانه دارند.'
+    ? 'حداکثر سه نقش حریف را در هفته و روزی یک بار شناسایی کنید. استعلام کلید و تجهیزات سهمیه جداگانه دارند.'
     : role === 'thief'
-      ? 'حداکثر ۵ سرقت در هفته، روزی یک بار، قبل از ساعت ۱۰ صبح.'
+      ? 'حداکثر پنج تلاش برای سرقت در هفته، روزی یک بار و قبل از ساعت ۱۰ صبح.'
       : role === 'killer'
-        ? 'حداکثر ۳ ترور در هفته، روزی یک بار، قبل از ساعت ۱۰ صبح.'
+        ? 'حداکثر سه تلاش برای ترور در هفته، روزی یک بار و قبل از ساعت ۱۰ صبح.'
         : ''}
               </p>
 
@@ -826,7 +847,7 @@ const r = await fetch(
                     disabled={busy}
                     onClick={() => act('spy_key')}
                   >
-                    آیا حریف کلید را یافته؟
+                    آیا حریف کلید را پیدا کرده است؟
                   </button>
 
                   <button
@@ -850,9 +871,9 @@ const r = await fetch(
               )}
 
               <label>
-                انتخاب فرد{' '}
+                انتخاب بازیکن{' '}
                 {role === 'guardian'
-                  ? 'از تیم خودت'
+                  ? 'از تیم خودتان'
                   : 'از تیم حریف'}
               </label>
 
@@ -872,11 +893,10 @@ const r = await fetch(
 
           {profile.is_admin && (
             <div className="card">
-              <h2>📊 ثبت فروش هر بازیکن</h2>
+              <h2>📊 ثبت فروش بازیکنان</h2>
 
               <p className="muted">
-                فروش کل یک روز را به میلیون تومان ثبت کن.
-                هر یک میلیون، یک سکه پایه.
+                فروش روزانه را به میلیون تومان وارد کنید. هر یک میلیون تومان فروش، یک سکه پایه ایجاد می‌کند.
               </p>
 
               <label>بازیکن</label>
@@ -894,17 +914,17 @@ const r = await fetch(
                 ))}
               </select>
 
-              <h3>📆 وضعیت ثبت فروش روزانه</h3>
+              <h3>📆 وضعیت فروش روزانه</h3>
               {salesSummaryError && <p className="danger">{salesSummaryError}</p>}
               {(salesSummary?.days ?? []).map(d=>(
                 <p key={d.day}>
-                  {d.day}: {d.submitted} از {d.expected} ثبت فروش ·
-                  {d.round_status==='settled'?' ✅ تسویه‌شده':
-                    d.round_status==='locked'?' 🔒 قفل‌شده':' ⏳ تسویه‌نشده'}
+                  {d.day}: {d.submitted} از {d.expected} فروش ثبت‌شده ·
+                  {d.round_status==='settled'?' ✅ تسویه شده':
+                    d.round_status==='locked'?' 🔒 قفل شده':' ⏳ تسویه نشده'}
                 </p>
               ))}
-              <p className="mini">برای بازیکن بدون فروش، مبلغ صفر را ثبت کن. فروش تکراری توسط دیتابیس رد می‌شود.</p>
-              <label>تاریخ فروش (میلادی)</label>
+              <p className="mini">برای بازیکنان بدون فروش، عدد صفر را ثبت کنید. پایگاه داده جلوی ثبت تکراری را می‌گیرد.</p>
+              <label>تاریخ فروش</label>
               <input type="date" value={saleDate}
                 min={salesSummary?.week_start ?? undefined}
                 max={salesSummary?.days?.[salesSummary.days.length-1]?.day ?? undefined}
@@ -931,7 +951,7 @@ const r = await fetch(
                   checked={targetHit}
                   onChange={e => setTargetHit(e.target.checked)}
                 />
-                تارگت روزانه محقق شده (+۵ سکه)
+                تارگت روزانه محقق شد (+۵ سکه)
               </label>
 
               <label
@@ -969,7 +989,7 @@ const r = await fetch(
                   })
                 }
               >
-                ثبت نهایی فروش این بازیکن
+                ثبت فروش بازیکن
               </button>
 
               <p className="danger mini">
@@ -982,6 +1002,13 @@ const r = await fetch(
       )}
 
       {message && <div className="notice">{message}</div>}
-    </main>
+      </main>
+      <nav className="gv-mobile-dock" aria-label="منوی موبایل">
+        <a href="#gv-dashboard"><span>⌂</span>خانه</a>
+        <a href="#gv-player"><span>♜</span>تیم</a>
+        <a href="#gv-command"><span>⚒</span>عملیات</a>
+        <a href="#gv-vault"><span>⚿</span>صندوق</a>
+      </nav>
+    </div>
   );
 }

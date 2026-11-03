@@ -18,17 +18,17 @@ export default function ChangePasswordPage() {
     setSuccess("");
 
     if (newPassword.length < 12) {
-      setError("رمز جدید باید حداقل ۱۲ کاراکتر باشد.");
+      setError("New password must be at least 12 characters.");
       return;
     }
 
     if (newPassword !== confirmPassword) {
-      setError("تکرار رمز جدید مطابقت ندارد.");
+      setError("Passwords do not match.");
       return;
     }
 
     if (newPassword === currentPassword) {
-      setError("رمز جدید باید با رمز قبلی متفاوت باشد.");
+      setError("New password must be different.");
       return;
     }
 
@@ -44,7 +44,7 @@ export default function ChangePasswordPage() {
         await db.auth.getUser();
 
       if (userError || !userData.user?.email) {
-        throw new Error("ابتدا وارد حساب کاربری خود شوید.");
+        throw new Error("Please sign in first.");
       }
 
       const { error: loginError } =
@@ -54,7 +54,7 @@ export default function ChangePasswordPage() {
         });
 
       if (loginError) {
-        throw new Error("رمز عبور فعلی اشتباه است.");
+        throw new Error("Current password is incorrect.");
       }
 
       const { error: updateError } =
@@ -69,12 +69,12 @@ export default function ChangePasswordPage() {
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
-      setSuccess("رمز عبور با موفقیت تغییر کرد.");
+      setSuccess("Password successfully changed.");
     } catch (err) {
       setError(
         err instanceof Error
           ? err.message
-          : "خطایی رخ داده است."
+          : "An unexpected error occurred."
       );
     } finally {
       setBusy(false);
@@ -83,19 +83,19 @@ export default function ChangePasswordPage() {
 
   return (
     <main
-      dir="rtl"
+      dir="ltr"
       style={{
         maxWidth: 440,
         margin: "60px auto",
         padding: 24,
       }}
     >
-      <h1>🔐 تغییر رمز عبور</h1>
-      <p>برای امنیت حساب خود، رمز فعلی را تأیید کنید.</p>
+      <h1>🔐 Change Password</h1>
+      <p>Confirm your current password to secure your account.</p>
 
       <form onSubmit={submit}>
         <label>
-          رمز عبور فعلی
+          Current Password
           <input
             type="password"
             autoComplete="current-password"
@@ -106,7 +106,7 @@ export default function ChangePasswordPage() {
         </label>
 
         <label>
-          رمز عبور جدید
+          New Password
           <input
             type="password"
             autoComplete="new-password"
@@ -118,7 +118,7 @@ export default function ChangePasswordPage() {
         </label>
 
         <label>
-          تکرار رمز عبور جدید
+          تکرار New Password
           <input
             type="password"
             autoComplete="new-password"
@@ -132,12 +132,12 @@ export default function ChangePasswordPage() {
         {success && <p role="status" style={{ color: "#90e6a8" }}>{success}</p>}
 
         <button type="submit" disabled={busy}>
-          {busy ? "در حال بررسی..." : "ثبت رمز عبور جدید"}
+          {busy ? "Updating..." : "ثبت New Password"}
         </button>
       </form>
 
       <p>
-        <a href="/">بازگشت به داشبورد</a>
+        <a href="/">Back to Dashboard</a>
       </p>
     </main>
   );
