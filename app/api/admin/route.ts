@@ -40,6 +40,12 @@ export async function POST(req:Request){
    }
    return NextResponse.json({message:`حساب ${name} ساخته و به تیم متصل شد. بازیکن می‌تواند با ایمیل و رمز وارد شود.`});
   }
+  if(b.action==='start_next_game'){
+    // The database function locks the current round and transfers balances atomically.
+    const {data:weekId,error}=await db.rpc('start_next_game_v3');
+    if(error)return bad('شروع بازی جدید ناموفق: '+error.message,409);
+    return NextResponse.json({message:'بازی جدید با نقش‌ها و کلید تازه آغاز شد؛ موجودی سکه‌های دو تیم حفظ شد.',week_id:weekId});
+  }
   if(b.action==='start_week'){
    const {data:active}=await db.from('weeks').select('id').eq('status','active').maybeSingle();if(active)return bad('هفته فعال از قبل وجود دارد');
    const {data:teams}=await db.from('teams').select('id');if(teams?.length!==2)return bad('دو تیم باید ثبت شده باشند');
