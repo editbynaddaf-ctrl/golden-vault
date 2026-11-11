@@ -65,6 +65,13 @@ export async function POST(req: Request) {
       return fail('فقط فرمانده اجازه خرید تجهیزات دارد', 403);
     }
 
+    const { data: victory, error: victoryErr } = await db.from('game_victories_v3')
+      .select('week_id').eq('week_id', week.id).maybeSingle();
+    if (victoryErr && !['42P01', 'PGRST205'].includes(victoryErr.code)) {
+      return fail('بررسی وضعیت بازی ناموفق بود', 500);
+    }
+    if (victory) return fail('بازی پایان یافته است؛ خرید و فعال‌سازی تجهیزات بسته شده', 409);
+
     const body = await req.json();
 
 if (body?.action === 'activate_shield') {
