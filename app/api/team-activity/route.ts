@@ -30,6 +30,29 @@ function safeOutcome(result: string | null): string | null {
   }
 }
 
+function spyDetail(result: string | null): string | null {
+  if (!result) return null;
+  try {
+    const parsed = JSON.parse(result) as Record<string, unknown>;
+    if (typeof parsed.role === 'string') {
+      const names: Record<string, string> = {
+        commander:'فرمانده',thief:'سارق',killer:'قاتل',guardian:'محافظ',spy:'جاسوس'
+      };
+      return 'نقش هدف: ' + (names[parsed.role] ?? 'نامشخص');
+    }
+    if (typeof parsed.found === 'boolean') {
+      return parsed.found ? 'تیم حریف کلید اصلی را پیدا کرده است' : 'تیم حریف هنوز کلید اصلی را پیدا نکرده است';
+    }
+    if (parsed.equipment && typeof parsed.equipment === 'object') {
+      const pairs = Object.entries(parsed.equipment as Record<string, unknown>)
+        .filter(([, v]) => typeof v === 'number')
+        .map(([k,v]) => `${k}: ${v}`);
+      return pairs.length ? 'خریدهای حریف: ' + pairs.join('، ') : 'حریف هنوز تجهیزی نخریده است';
+    }
+    return null;
+  } catch { return null; }
+}
+
 export async function GET() {
   try {
     const client = await serverDb();
@@ -86,6 +109,8 @@ export async function GET() {
         created_at: op.created_at,
         status: showOutcome ? op.status : 'hidden',
         outcome: showOutcome ? safeOutcome(op.result) : null,
+        private_detail: showOutcome && actor && op.kind.startsWith('spy_')
+          ? spyDetail(op.result) : null,
       }];
     });
 
