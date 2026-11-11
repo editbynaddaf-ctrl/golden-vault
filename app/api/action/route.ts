@@ -40,6 +40,13 @@ export async function POST(req: Request) {
       .select('role').eq('week_id', week.id).eq('user_id', user.id).maybeSingle();
     if (!assignment) return fail('نقش شما مشخص نیست', 403);
 
+    const { data: won, error: victoryErr } = await db.from('game_victories_v3')
+      .select('week_id').eq('week_id', week.id).maybeSingle();
+    if (victoryErr && !['42P01','PGRST205'].includes(victoryErr.code)) {
+      return fail('بررسی وضعیت صندوق ناموفق بود', 500);
+    }
+    if (won) return fail('بازی پایان یافته و صندوق باز شده است', 409);
+
     const body = await req.json();
     const action = String(body.action ?? '');
     const role = assignment.role;
@@ -137,7 +144,10 @@ if (time.hour >= 10) return fail('مهلت ثبت عملیات امروز تما
         day:time.day,status:'resolved',result:JSON.stringify(result),resolved_at:new Date().toISOString(),
       });
       if (insertError) return fail('ثبت استعلام ناموفق: '+insertError.message);
-      return NextResponse.json({ message, confidential: true });
+      return NextResponse.json({
+        message: 'استعلام ثبت شد. نتیجه محرمانه از ساعت ۱۲ امروز در گزارش عملیات نمایش داده می‌شود.',
+        confidential: true
+      });
     }
 
     const { error } = await db.from('operations').insert({
