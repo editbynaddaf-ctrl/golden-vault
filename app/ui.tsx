@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import TeamActivity from './team-activity';
 type Person = {
   id: string;
   name: string;
@@ -1000,6 +1001,8 @@ const r = await fetch(
           )}
         </>
       )}
+
+      {!profile.is_admin && week && <TeamActivity />}
 
       {message && <div className="notice">{message}</div>}
       </main>
