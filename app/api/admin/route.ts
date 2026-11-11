@@ -76,7 +76,7 @@ export async function POST(req:Request){
     if(round?.status==='settled')return bad('این روز قبلاً تسویه شده؛ ثبت فروش جدید مجاز نیست');
    const {data,error}=await db.rpc('register_daily_sale_v2',{p_week:week.id,p_day:day,p_player:playerId,p_amount:amount,p_hit:!!b.target_hit,p_top:!!b.top_seller});
    if(error)return bad('ثبت فروش ناموفق: '+(error.code==='23505'?'فروش این بازیکن یا تاپ‌سلر آن روز قبلاً ثبت شده است':error.message));
-   return NextResponse.json({message:`فروش ثبت شد و ${data} سکه به خزانه تیم اضافه شد. عملیات مخفی هنوز تسویه خودکار ندارد.`});
+   return NextResponse.json({message:`فروش ثبت شد و ${data} سکه به خزانه تیم اضافه شد. نتیجه عملیات در زمان مقرر اعلام می‌شود و تسویه روزهای گذشته خودکار است.`});
   }
   return bad('عملیات نامعتبر');
  }catch{return bad('خطای سرور',500)}
