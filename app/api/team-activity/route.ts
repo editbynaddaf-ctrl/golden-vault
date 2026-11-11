@@ -68,8 +68,11 @@ export async function GET() {
       // Other-team players only see operations targeting themselves after 18:00.
       if (!ownTeam && !(op.day < today || (op.day === today && hour >= 18))) return [];
 
+      const actor = op.actor_id === user.id;
+      // The actor receives the result at 12:00, the target at 18:00.
+      // Other allies can inspect the operation immediately, but not its outcome until 18:00.
       const showOutcome = op.status === 'resolved' &&
-        (ownTeam
+        (actor
           ? (op.day < today || (op.day === today && hour >= 12))
           : (op.day < today || (op.day === today && hour >= 18)));
 
