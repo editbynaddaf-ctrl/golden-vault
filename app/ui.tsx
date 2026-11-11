@@ -40,41 +40,26 @@ export default function Dashboard({
   people
 }: P) {
   const [key, setKey] = useState(1);
-  const [finalKey, setFinalKey] = useState(1);
-  const [finalInfo, setFinalInfo] = useState<{
-    final: { status: string; first_team_id: string; winner_team_id: string | null } | null;
-    counts: Record<string, number>;
-    total_attempts: number;
-    next_team_id: string | null;
-    sales?: { team_id: string; amount_million: number }[];
+  const [gameState, setGameState] = useState<{
+    status: 'active' | 'won';
+    winner_team_id: string | null;
+    won_at?: string | null;
   } | null>(null);
-  const [finalError, setFinalError] = useState('');
-  const [finalBusy, setFinalBusy] = useState(false);
 
-  async function loadFinal() {
-    try {
-      const r = await fetch('/api/vault-final', { cache: 'no-store' });
-      const j = await r.json();
-      if (!r.ok) { setFinalError(j.error || 'خطا در دریافت وضعیت فینال'); return; }
-      setFinalInfo(j);
-      setFinalError('');
-    } catch { setFinalError('ارتباط با سرور فینال برقرار نشد'); }
-  }
-  useEffect(() => { if (week) void loadFinal(); }, [week?.id]);
-  async function finalAction(action: 'open_final' | 'attempt_key') {
-    setFinalBusy(true);
-    setFinalError('');
-    try {
-      const r = await fetch('/api/vault-final', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action, ...(action === 'attempt_key' ? { key_number: finalKey } : {}) })
-      });
-      const j = await r.json();
-      if (!r.ok) setFinalError(j.error || 'عملیات انجام نشد');
-      else { setMessage(j.message || 'ثبت شد'); await loadFinal(); }
-    } catch { setFinalError('ارتباط با سرور برقرار نشد'); }
-    finally { setFinalBusy(false); }
-  }
+  useEffect(() => {
+    if (!week) return;
+    let active = true;
+    const load = async () => {
+      try {
+        const r = await fetch('/api/game-state', { cache: 'no-store' });
+        const data = await r.json();
+        if (r.ok && active) setGameState(data.game ?? null);
+      } catch { /* keep prior state during a transient outage */ }
+    };
+    void load();
+    const timer = setInterval(load, 15000);
+    return () => { active = false; clearInterval(timer); };
+  }, [week?.id]);
 
   type RankingRow = {
     id: string;
@@ -106,34 +91,6 @@ export default function Dashboard({
   useEffect(() => { if (week) void loadRankings(); }, [week?.id]);
 
   type SettlementDay = { day: string; submitted: number; expected: number; pending_operations: number; round_status: string };
-  const [settlementDays, setSettlementDays] = useState<SettlementDay[]>([]);
-  const [settlementError, setSettlementError] = useState('');
-  const [settlementBusy, setSettlementBusy] = useState(false);
-  async function loadSettlementDays() {
-    try {
-      const r = await fetch('/api/daily-settlement',{cache:'no-store'});
-      const j = await r.json();
-      if (!r.ok) {setSettlementError(j.error || 'خطا در دریافت گزارش روزانه'); return;}
-      setSettlementDays(j.days ?? []); setSettlementError('');
-    } catch {setSettlementError('ارتباط با سرویس تسویه برقرار نشد');}
-  }
-  useEffect(() => {if (profile.is_admin && week) void loadSettlementDays();},[profile.is_admin,week?.id]);
-  async function settlementAction(action:'lock_day'|'resolve_day'|'settle_day',day:string) {
-    const labels = {lock_day:'قفل عملیات',resolve_day:'پردازش عملیات نقش‌ها',settle_day:'تسویه مالی'};
-    if (!window.confirm(`برای ${day}، «${labels[action]}» اجرا شود؟\nاین اقدام می‌تواند وضعیت دیتابیس را تغییر دهد.`)) return;
-    setSettlementBusy(true); setSettlementError('');
-    try {
-      const r=await fetch('/api/daily-settlement',{
-        method:'POST',headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({action,day})
-      });
-      const j=await r.json();
-      if (!r.ok) setSettlementError(j.error || 'عملیات انجام نشد');
-      else {setMessage(j.message || 'انجام شد'); await loadSettlementDays();}
-    } catch {setSettlementError('ارتباط با سرور برقرار نشد');}
-    finally {setSettlementBusy(false);}
-  }
-
   const [target, setTarget] = useState('');
   const [message, setMessage] = useState('');
   const [busy, setBusy] = useState(false);
@@ -490,53 +447,19 @@ const r = await fetch(
             </div>
           </div>
 
-          {(profile.is_admin || role === 'commander') && (
+          {gameState?.status === 'won' && (
+            <div className="card" role="status">
+              <h2>🏆 صندوق طلایی باز شد!</h2>
+              <p className="success">
+                تیم برنده: {teams.find(t => t.id === gameState.winner_team_id)?.name ?? 'نامشخص'}
+              </p>
+              <p className="muted">اولین تیمی که کلید درست را آزمایش کرد، برنده بازی شد.</p>
+            </div>
+          )}
+          {gameState?.status === 'active' && (
             <div className="card">
-              <h2>🏆 مراسم نهایی صندوق طلایی</h2>
-              {finalError && <p className="danger">{finalError}</p>}
-              {!finalInfo?.final ? (
-                <>
-                  <p className="muted">مراسم نهایی هنوز آغاز نشده است.</p>
-                  {profile.is_admin && (
-                    <>
-                      <p>فروش ثبت‌شده (میلیون تومان):</p>
-                      {(finalInfo?.sales ?? []).map(sale => (
-                        <p key={sale.team_id}>{teams.find(t => t.id === sale.team_id)?.name ?? 'تیم'}: {sale.amount_million}</p>
-                      ))}
-                      <p className="muted">مراسم نهایی از پنجشنبه و بعد از تسویه کامل روزها قابل شروع است.</p>
-                      <button disabled={finalBusy} onClick={() => {
-                        if (window.confirm('مراسم فینال صندوق شروع شود؟')) void finalAction('open_final');
-                      }}>🎬 شروع مراسم نهایی</button>
-                    </>
-                  )}
-                </>
-              ) : (
-                <>
-                  <p>وضعیت: {finalInfo.final.status === 'open' ? '🔓 مراسم در جریان است' : finalInfo.final.status === 'won' ? '🏆 صندوق باز شد' : '📦 جایزه به هفته بعد منتقل شد'}</p>
-                  <p>تیم آغازکننده: {teams.find(t => t.id === finalInfo.final?.first_team_id)?.name ?? 'نامشخص'}</p>
-                  <p>تلاش‌ها: {finalInfo.total_attempts} از ۶</p>
-                  {teams.map(t => <p key={t.id}>{t.name}: {finalInfo.counts[t.id] ?? 0} از ۳ تلاش</p>)}
-                  {finalInfo.final.status === 'won' && <p className="success">برنده: {teams.find(t => t.id === finalInfo.final?.winner_team_id)?.name ?? 'تیم برنده'}</p>}
-                  {finalInfo.final.status === 'open' && (
-                    <>
-                      <p>نوبت فعلی: {teams.find(t => t.id === finalInfo.next_team_id)?.name ?? 'نامشخص'}</p>
-                      {role === 'commander' && profile.team_id === finalInfo.next_team_id && (
-                        <>
-                          <label>شماره کلید فینال</label>
-                          <select value={finalKey} onChange={e => setFinalKey(Number(e.target.value))}>
-                            {Array.from({ length: 20 }, (_, i) => i + 1).map(n => <option key={n} value={n}>{n}</option>)}
-                          </select>
-                          <button disabled={finalBusy} onClick={() => {
-                            if (window.confirm(`تلاش با کلید ${finalKey} ثبت شود؟ این تلاش از سهمیه فینال کم می‌کند.`))
-                              void finalAction('attempt_key');
-                          }}>🗝️ امتحان کلید صندوق</button>
-                        </>
-                      )}
-                    </>
-                  )}
-                </>
-              )}
-              <button disabled={finalBusy} onClick={() => void loadFinal()}>↻ به‌روزرسانی وضعیت فینال</button>
+              <h2>🗝️ مسابقه پیدا کردن کلید</h2>
+              <p className="muted">مراسم پنجشنبه حذف شده است. اولین آزمایش موفق کلید اصلی فوراً تیم برنده را مشخص می‌کند.</p>
             </div>
           )}
 
@@ -572,25 +495,8 @@ const r = await fetch(
 
           {profile.is_admin && (
             <div className="card">
-              <h2>🧾 مدیریت تسویه روزانه</h2>
-              <p className="muted">بعد از ساعت ۱۰ صبح تهران، عملیات روز را قفل کنید، نقش‌ها را پردازش کنید و پس از ثبت فروش هر ۱۰ نفر تسویه را انجام دهید. ابتدا روزهای قدیمی‌تر را رسیدگی کنید.</p>
-              {settlementError && <p className="danger">{settlementError}</p>}
-              {settlementDays.map(d => (
-                <div key={d.day} className="card">
-                  <strong>{d.day}</strong>
-                  <p>فروش ثبت‌شده: {d.submitted} از {d.expected} نفر</p>
-                  <p>وضعیت: {d.round_status === 'settled' ? '✅ تسویه شده' : d.round_status === 'locked' ? '🔒 قفل شده' : '⏳ قفل نشده'}</p>
-                  <p>عملیات در انتظار: {d.pending_operations}</p>
-                  {d.round_status !== 'settled' && <div className="actions">
-                    {d.round_status !== 'locked' && <button disabled={settlementBusy} onClick={() => void settlementAction('lock_day',d.day)}>🔒 قفل کردن روز</button>}
-                    {d.round_status === 'locked' && <button disabled={settlementBusy} onClick={() => void settlementAction('resolve_day',d.day)}>⚔️ پردازش نقش‌ها</button>}
-                    {d.round_status === 'locked' && d.submitted === d.expected && d.pending_operations === 0 &&
-                      <button disabled={settlementBusy} onClick={() => void settlementAction('settle_day',d.day)}>🪙 تسویه سکه‌ها</button>}
-                  </div>}
-                </div>
-              ))}
-              <button disabled={settlementBusy} onClick={() => void loadSettlementDays()}>↻ به‌روزرسانی وضعیت روزها</button>
-              <p className="muted">پایگاه داده قبل از اعمال تغییرات، شرایط تسویه را بررسی می‌کند.</p>
+              <h2>⚙️ پردازش خودکار بازی</h2>
+              <p className="muted">قفل‌کردن عملیات ساعت ۱۰ و تسویه مالی روزهای گذشته به صورت خودکار انجام می‌شود. مدیر فقط فروش‌های واقعی را ثبت می‌کند. فروش ثبت‌نشده در پایان مهلت به منزله صفر است.</p>
             </div>
           )}
 
@@ -638,7 +544,7 @@ const r = await fetch(
             )}
           </div>
 
-          {role === 'commander' && (
+          {role === 'commander' && gameState?.status !== 'won' && (
             <div className="card">
               <h2 id="gv-command">♛ اتاق فرماندهی</h2>
               
@@ -826,7 +732,7 @@ const r = await fetch(
             </div>
           )}
 
-          {['thief', 'killer', 'guardian', 'spy'].includes(role || '') && (
+          {gameState?.status !== 'won' && ['thief', 'killer', 'guardian', 'spy'].includes(role || '') && (
             <div className="card">
               <h2 id="gv-command">⚡ قدرت ویژه شما</h2>
 
@@ -892,7 +798,7 @@ const r = await fetch(
             </div>
           )}
 
-          {profile.is_admin && (
+          {profile.is_admin && gameState?.status !== 'won' && (
             <div className="card">
               <h2>📊 ثبت فروش بازیکنان</h2>
 
