@@ -12,6 +12,7 @@ type TeamEvent = {
   created_at: string;
   status: string;
   outcome: string | null;
+  private_detail: string | null;
 };
 
 const actionNames: Record<string, string> = {
@@ -82,8 +83,8 @@ export default function TeamActivity() {
             <strong>{e.actor}</strong>
             {e.target ? ` ← هدف: ${e.target}` : ' — عملیات تیمی'}
           </p>
-          <p className={e.outcome ? 'success mini' : 'muted mini'}>
-            {e.outcome ? (outcomeNames[e.outcome] ?? e.outcome) :
+          <p className={e.outcome || e.private_detail ? 'success mini' : 'muted mini'}>
+            {e.private_detail ? e.private_detail : e.outcome ? (outcomeNames[e.outcome] ?? e.outcome) :
               (e.actor_team ? 'نتیجه از ساعت ۱۲ قابل مشاهده است' : 'نتیجه از ساعت ۱۸ قابل مشاهده است')}
           </p>
         </article>
