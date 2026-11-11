@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import TeamActivity from './team-activity';
+import GameRecap from './game-recap';
 type Person = {
   id: string;
   name: string;
@@ -190,7 +191,8 @@ useEffect(() => {
         'create_teams',
         'create_player',
         'sale_one',
-        'start_week'
+        'start_week',
+        'start_next_game'
       ];
 const r = await fetch(
   ['buy_equipment', 'activate_shield', 'activate_key_intel'].includes(action)
@@ -453,7 +455,11 @@ const r = await fetch(
               <p className="success">
                 تیم برنده: {teams.find(t => t.id === gameState.winner_team_id)?.name ?? 'نامشخص'}
               </p>
-              <p className="muted">اولین تیمی که کلید درست را آزمایش کرد، برنده بازی شد.</p>
+              <p className="muted">بازی پایان یافته است؛ تمام عملیات متوقف شده و نقش‌ها و گزارش دو تیم آشکار شده‌اند.</p>
+              {profile.is_admin && <button disabled={busy} onClick={() => {
+                if(window.confirm('بازی جدید شروع شود؟ نقش‌ها و کلید تغییر می‌کنند؛ سکه‌های تیم‌ها حفظ می‌شوند.')) void act('start_next_game');
+              }}>🔄 شروع بازی جدید با حفظ سکه‌ها</button>}
+              <GameRecap weekId={week.id} />
             </div>
           )}
           {gameState?.status === 'active' && (
