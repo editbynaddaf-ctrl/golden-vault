@@ -437,10 +437,15 @@ BEGIN
  SELECT id,starts_on INTO v_week,v_start
  FROM public.weeks WHERE status='active' FOR UPDATE;
  IF NOT FOUND THEN RETURN jsonb_build_object('status','no_active_game'); END IF;
- IF EXISTS (SELECT 1 FROM public.game_victories_v3 WHERE week_id=v_week) THEN
-   RETURN jsonb_build_object('status','game_won');
- END IF;
+ -- Settle all sales dates up to and including the victory date, but never later.
+ -- A completed game still needs its outstanding pre-victory combat to settle.
  v_last := v_today - CASE WHEN v_hour < 12 THEN 2 ELSE 1 END;
+ SELECT LEAST(v_last, (won_at AT TIME ZONE 'Asia/Tehran')::date)
+ INTO v_last
+ FROM public.game_victories_v3 WHERE week_id=v_week;
+ IF NOT FOUND THEN
+   v_last := v_today - CASE WHEN v_hour < 12 THEN 2 ELSE 1 END;
+ END IF;
  IF v_last < v_start THEN RETURN jsonb_build_object('status','nothing_due'); END IF;
 
  FOR v_day IN SELECT generate_series(v_start,v_last,'1 day'::interval)::date LOOP
@@ -459,7 +464,12 @@ BEGIN
          WHERE s.week_id=v_week AND s.day=v_day AND s.player_id=a.user_id
        )
    LOOP
-     PERFORM public.register_daily_sale_v2(v_week,v_day,v_person.user_id,0,false,false);
+     -- Insert zero sales directly; the normal sale RPC rejects new entries after victory.
+     -- Zero coins do not change team balances or coin ledger.
+     INSERT INTO public.daily_sales(
+       week_id,day,player_id,amount_million,target_million,target_hit,top_seller
+     ) VALUES (v_week,v_day,v_person.user_id,0,0,false,false)
+     ON CONFLICT (week_id,day,player_id) DO NOTHING;
      v_zero_rows:=v_zero_rows+1;
    END LOOP;
    v_result := public.settle_daily_combat_v2(v_week,v_day);
