@@ -58,7 +58,7 @@ export default function Dashboard({
       } catch { /* keep prior state during a transient outage */ }
     };
     void load();
-    const timer = setInterval(load, 15000);
+    const timer = setInterval(load, 2000);
     return () => { active = false; clearInterval(timer); };
   }, [week?.id]);
 
