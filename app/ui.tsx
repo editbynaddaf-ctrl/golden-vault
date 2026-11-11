@@ -129,6 +129,9 @@ useEffect(() => {
   const [showPassword, setShowPassword] = useState(false);
   const [newTeam, setNewTeam] = useState('');
 
+  const [coinTeam, setCoinTeam] = useState('');
+  const [coinAmount, setCoinAmount] = useState('');
+  const [coinNote, setCoinNote] = useState('');
   const [salePlayer, setSalePlayer] = useState('');
   const [saleAmount, setSaleAmount] = useState('');
   const [saleDate, setSaleDate] = useState('');
@@ -191,6 +194,7 @@ useEffect(() => {
         'create_teams',
         'create_player',
         'sale_one',
+        'grant_coins',
         'start_week',
         'start_next_game'
       ];
@@ -801,6 +805,30 @@ const r = await fetch(
                   </option>
                 ))}
               </select>
+            </div>
+          )}
+
+          {profile.is_admin && week && (
+            <div className="card" id="gv-admin-coins">
+              <h2>🪙 افزودن آزاد سکه توسط مدیر</h2>
+              <p className="muted">بدون محدودیت تعداد دفعات یا ساعت و روز؛ به هر تیم هر چند بار لازم است سکه اضافه کنید. هر بار در دفتر تراکنش‌ها ثبت می‌شود.</p>
+              <label>تیم دریافت‌کننده</label>
+              <select value={coinTeam} onChange={e=>setCoinTeam(e.target.value)}>
+                <option value="">انتخاب تیم</option>
+                {teams.map(t=><option key={t.id} value={t.id}>{t.name}</option>)}
+              </select>
+              <label>تعداد سکه برای افزودن</label>
+              <input type="number" min="1" step="1" value={coinAmount}
+                onChange={e=>setCoinAmount(e.target.value)} placeholder="مثلاً ۵۰"/>
+              <label>توضیح (اختیاری)</label>
+              <input value={coinNote} onChange={e=>setCoinNote(e.target.value)}
+                placeholder="مثلاً پاداش ویژه"/>
+              <button disabled={busy || !coinTeam || !Number.isSafeInteger(Number(coinAmount))
+                  || Number(coinAmount)<=0 || Number(coinAmount)>2147483647}
+                onClick={()=>{if(window.confirm(`آیا ${coinAmount} سکه به ${teams.find(t=>t.id===coinTeam)?.name||'این تیم'} اضافه شود؟`))
+                  void act('grant_coins',{team_id:coinTeam,coins:Number(coinAmount),note:coinNote});}}>
+                ➕ افزودن سکه به تیم
+              </button>
             </div>
           )}
 
