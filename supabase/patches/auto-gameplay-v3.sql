@@ -490,8 +490,9 @@ $fn$;
 REVOKE ALL ON FUNCTION public.auto_finalize_past_days_v3() FROM PUBLIC, anon, authenticated;
 REVOKE ALL ON FUNCTION public.cron_auto_finalize_v3() FROM PUBLIC, anon, authenticated;
 
+-- Times are UTC in pg_cron: minute 35 UTC = minute 05 Tehran (UTC+03:30).
 -- Requires pg_cron installed (already present in golden-vault-test).
-SELECT cron.schedule('golden-vault-auto-finalize-v3','5 * * * *',
+SELECT cron.schedule('golden-vault-auto-finalize-v3','35 * * * *',
   'SELECT public.cron_auto_finalize_v3();');
 
 COMMIT;
