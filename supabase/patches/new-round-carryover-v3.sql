@@ -34,9 +34,14 @@ BEGIN
     -- All previously scheduled financial settlements must complete before copying wallets.
     -- Unresolved same-day operations are cancelled when the vault opens.
     IF EXISTS (
-      SELECT 1 FROM public.daily_rounds
-      WHERE week_id=old_week AND day<(now() AT TIME ZONE 'Asia/Tehran')::date
-        AND status<>'settled'
+      SELECT 1 FROM generate_series(
+        (SELECT starts_on FROM public.weeks WHERE id=old_week),
+        (now() AT TIME ZONE 'Asia/Tehran')::date - 1,
+        interval '1 day'
+      ) AS dates(d)
+      LEFT JOIN public.daily_rounds r
+        ON r.week_id=old_week AND r.day=dates.d::date
+      WHERE r.status IS DISTINCT FROM 'settled'
     ) THEN RAISE EXCEPTION 'previous-day settlement is incomplete'; END IF;
     UPDATE public.operations SET status='canceled',
       result='{"outcome":"game_ended"}'
@@ -66,4 +71,20 @@ BEGIN
 END;
 $fn$;
 REVOKE ALL ON FUNCTION public.start_next_game_v3() FROM PUBLIC,anon,authenticated;
+-- Lock game actions against the atomic victory record, even with concurrent requests.
+CREATE OR REPLACE FUNCTION public.prevent_operation_after_victory_v3()
+RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path TO 'public','pg_temp' AS $guard$
+BEGIN
+  PERFORM 1 FROM public.weeks WHERE id=NEW.week_id AND status='active' FOR UPDATE;
+  IF NOT FOUND OR EXISTS (
+    SELECT 1 FROM public.game_victories_v3 WHERE week_id=NEW.week_id
+  ) THEN RAISE EXCEPTION 'game ended: actions are closed'; END IF;
+  RETURN NEW;
+END;
+$guard$;
+DROP TRIGGER IF EXISTS prevent_operation_after_victory_v3 ON public.operations;
+CREATE TRIGGER prevent_operation_after_victory_v3
+BEFORE INSERT ON public.operations FOR EACH ROW
+EXECUTE FUNCTION public.prevent_operation_after_victory_v3();
+REVOKE ALL ON FUNCTION public.prevent_operation_after_victory_v3() FROM PUBLIC,anon,authenticated;
 COMMIT;
