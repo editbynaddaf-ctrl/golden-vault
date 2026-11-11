@@ -60,6 +60,20 @@ export async function POST(req:Request){
    }
    return NextResponse.json({message:'هفته شروع شد و نقش‌ها قرعه‌کشی شدند.'});
   }
+  if(b.action==='grant_coins'){
+    const teamId=String(b.team_id||'');
+    const amount=Number(b.coins);
+    if(!Number.isSafeInteger(amount)||amount<=0||amount>2147483647)
+      return bad('تعداد سکه باید عدد صحیح مثبت باشد');
+    const {data:team,error:teamError}=await db.from('teams')
+      .select('id').eq('id',teamId).maybeSingle();
+    if(teamError||!team)return bad('تیم انتخاب‌شده معتبر نیست');
+    const {data:balance,error}=await db.rpc('admin_grant_coins_unlimited_v3',{
+      p_team:teamId,p_amount:amount,p_note:String(b.note||'').slice(0,300)
+    });
+    if(error)return bad('افزودن سکه ناموفق: '+error.message,409);
+    return NextResponse.json({message:`${amount} سکه به خزانه تیم اضافه شد. موجودی جدید: ${balance} سکه.`});
+  }
   if(b.action==='sale_one'){
    const {data:week}=await db.from('weeks').select('id,starts_on').eq('status','active').maybeSingle();if(!week)return bad('هفته فعالی وجود ندارد');
    const playerId=String(b.player_id||'');const {data:player}=await db.from('profiles').select('id,team_id,is_admin').eq('id',playerId).maybeSingle();
