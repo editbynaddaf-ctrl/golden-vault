@@ -149,11 +149,11 @@ export async function GET(){
         if(opLedger.length>0){
           if(amount===0)effect='هیچ سکه‌ای بابت این عملیات منتقل نشد.';
           else if(credits>0 && debits<0)
-            effect=`${amount} سکه از ${teamNames.get(debitTeam)||'تیم پرداخت‌کننده'} به ${teamNames.get(creditTeam)||'تیم دریافت‌کننده'} منتقل شد.`;
+            effect=`${amount} سکه از ${teamNames.get(debitTeam||'')||'تیم پرداخت‌کننده'} به ${teamNames.get(creditTeam||'')||'تیم دریافت‌کننده'} منتقل شد.`;
           else if(credits>0)
-            effect=`${credits} سکه به ${teamNames.get(creditTeam)||'تیم دریافت‌کننده'} اضافه شد.`;
+            effect=`${credits} سکه به ${teamNames.get(creditTeam||'')||'تیم دریافت‌کننده'} اضافه شد.`;
           else if(debits<0)
-            effect=`${Math.abs(debits)} سکه از ${teamNames.get(debitTeam)||'تیم پرداخت‌کننده'} کسر شد.`;
+            effect=`${Math.abs(debits)} سکه از ${teamNames.get(debitTeam||'')||'تیم پرداخت‌کننده'} کسر شد.`;
         }else if(outcome==='blocked_by_protection'||outcome==='guardian_immune'||
           outcome==='assassination_failed'||outcome==='invalid_target'||
           outcome==='canceled_by_assassination'||outcome==='game_ended')
