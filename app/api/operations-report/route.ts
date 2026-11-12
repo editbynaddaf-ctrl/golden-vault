@@ -49,8 +49,13 @@ export async function GET(){
     const now=tehranNow();
     const yesterdayDate=yesterday(now.day);
     const visibleDates=new Set<string>();
-    if(week.starts_on<=yesterdayDate)visibleDates.add(yesterdayDate);
-    if(week.starts_on<=now.day)visibleDates.add(now.day);
+    // Show every day of the current round, even when there were zero operations.
+    let cursor=new Date(week.starts_on+'T12:00:00Z');
+    const end=new Date(now.day+'T12:00:00Z');
+    for(let i=0;i<120&&cursor<=end;i++){
+      visibleDates.add(cursor.toISOString().slice(0,10));
+      cursor.setUTCDate(cursor.getUTCDate()+1);
+    }
     for(const op of (ops.data||[]) as Operation[])if(op.day<=now.day)visibleDates.add(op.day);
     const days=Array.from(visibleDates).sort((a,b)=>b.localeCompare(a));
     const rows=[];
