@@ -1,8 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import TeamActivity from './team-activity';
-import GameRecap from './game-recap';
 type Person = {
   id: string;
   name: string;
@@ -463,7 +461,7 @@ const r = await fetch(
               {profile.is_admin && <button disabled={busy} onClick={() => {
                 if(window.confirm('بازی جدید شروع شود؟ نقش‌ها و کلید تغییر می‌کنند و سکه‌های هر دو تیم در بازی جدید صفر می‌شود. این عملیات قابل بازگشت نیست.')) void act('start_next_game');
               }}>🔄 شروع بازی جدید با صفر شدن سکه‌ها</button>}
-              <GameRecap weekId={week.id} />
+              <p className="muted">گزارش کامل پایان بازی محفوظ است و پس از رفع مشکل نمایش دوباره فعال می‌شود.</p>
             </div>
           )}
           {gameState?.status === 'active' && (
@@ -473,7 +471,7 @@ const r = await fetch(
             </div>
           )}
 
-          <TeamActivity />
+          <div className="card"><h2>⚔️ گزارش عملیات</h2><p className="muted">نمایش گزارش‌ها موقتاً برای رفع مشکل ورود غیرفعال شده است. اطلاعات عملیات در دیتابیس محفوظ است.</p></div>
 
           <div className="card">
             <h2>🏅 سکه‌های فروش و رتبه‌بندی</h2>
