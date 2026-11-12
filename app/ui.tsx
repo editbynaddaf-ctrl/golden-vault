@@ -461,8 +461,8 @@ const r = await fetch(
               </p>
               <p className="muted">بازی پایان یافته است؛ تمام عملیات متوقف شده و نقش‌ها و گزارش دو تیم آشکار شده‌اند.</p>
               {profile.is_admin && <button disabled={busy} onClick={() => {
-                if(window.confirm('بازی جدید شروع شود؟ نقش‌ها و کلید تغییر می‌کنند؛ سکه‌های تیم‌ها حفظ می‌شوند.')) void act('start_next_game');
-              }}>🔄 شروع بازی جدید با حفظ سکه‌ها</button>}
+                if(window.confirm('بازی جدید شروع شود؟ نقش‌ها و کلید تغییر می‌کنند و سکه‌های هر دو تیم در بازی جدید صفر می‌شود. این عملیات قابل بازگشت نیست.')) void act('start_next_game');
+              }}>🔄 شروع بازی جدید با صفر شدن سکه‌ها</button>}
               <GameRecap weekId={week.id} />
             </div>
           )}
