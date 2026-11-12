@@ -44,7 +44,7 @@ export async function POST(req:Request){
     // The database function locks the current round and transfers balances atomically.
     const {data:weekId,error}=await db.rpc('start_next_game_v3');
     if(error)return bad('شروع بازی جدید ناموفق: '+error.message,409);
-    return NextResponse.json({message:'بازی جدید با نقش‌ها و کلید تازه آغاز شد؛ موجودی سکه‌های دو تیم حفظ شد.',week_id:weekId});
+    return NextResponse.json({message:'بازی جدید با نقش‌ها و کلید تازه آغاز شد؛ موجودی هر دو تیم از صفر شروع می‌شود.',week_id:weekId});
   }
   if(b.action==='start_week'){
    const {data:active}=await db.from('weeks').select('id').eq('status','active').maybeSingle();if(active)return bad('هفته فعال از قبل وجود دارد');
