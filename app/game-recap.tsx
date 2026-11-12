@@ -1,6 +1,6 @@
 'use client';
 import {useEffect,useState} from 'react';
-import {actionLabels,roleLabels,statusLabel,operationDescription,operationResults,eventDescription} from './operation-labels';
+import {roleLabels,eventDescription} from './operation-labels';
 
 type Recap={
  week_id:string;won_at:string;winning_key:number;winner_team_name:string;
@@ -37,15 +37,7 @@ export default function GameRecap({weekId}:{weekId:string}){
     {k.team_name}، کلید شماره {k.key_number} را {k.kind==='test'?'آزمایش':'از گزینه‌ها حذف'} کرد؛
     {' '}{k.result==='correct'?'✅ این همان کلید برنده بود.':'❌ کلید اشتباه بود.'}
   </p>)}
-  <h3>⚔️ گزارش عملیات تمام بازیکنان</h3>
-  <p className="muted">پس از پایان بازی، جزئیات عملیات هر دو تیم برای تمام بازیکنان قابل مشاهده است.</p>
-  {recap.operations.length===0?<p>عملیاتی ثبت نشده است.</p>:recap.operations.map(o=><article className="card" key={o.id}>
-    <strong>{o.day} · {actionLabels[o.kind]||'عملیات بازی'}</strong>
-    <p>{operationDescription(o.kind,o.actor,o.target)}</p>
-    <p className="muted">وضعیت: {statusLabel(o.status)}</p>
-    {operationResults(o.result,o.status,o.kind).map((line,i)=>
-      <p className="mini" key={i}>{line}</p>)}
-  </article>)}
+  <p className="muted">برای مشاهده عملیات و اثر سکه‌های هر روز، از بخش «گزارش روزانه عملیات» و انتخاب تاریخ استفاده کنید.</p>
   <h3>📜 سایر رویدادهای ثبت‌شده</h3>
   {recap.events.length===0?<p>رویدادی ثبت نشده است.</p>:recap.events.map(e=><article className="card" key={e.id}>
    <strong>{e.day} · {e.summary}</strong>
