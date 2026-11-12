@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import PwaInstall from './pwa-install';
 type Person = {
   id: string;
   name: string;
@@ -239,6 +240,7 @@ const r = await fetch(
           <a href="#gv-player"><span>♜</span> تیم و نقش</a>
           <a href="#gv-vault"><span>⚿</span> کلیدهای صندوق</a>
           <a href="#gv-command"><span>⚒</span> عملیات و فروشگاه</a>
+          <a href="/operations"><span>☷</span> گزارش روزانه عملیات</a>
           <a href="#gv-events"><span>✦</span> رویدادها</a>
         </nav>
         <div className="gv-side-note">GOLDEN VAULT <strong>بازی فعال</strong><span>عملیات ساعت ۱۰ صبح به وقت تهران قفل می‌شود</span></div>
@@ -950,8 +952,10 @@ const r = await fetch(
         <a href="#gv-dashboard"><span>⌂</span>خانه</a>
         <a href="#gv-player"><span>♜</span>تیم</a>
         <a href="#gv-command"><span>⚒</span>عملیات</a>
+        <a href="/operations"><span>☷</span>گزارش</a>
         <a href="#gv-vault"><span>⚿</span>صندوق</a>
       </nav>
+      {!profile.is_admin && <PwaInstall />}
     </div>
   );
 }
