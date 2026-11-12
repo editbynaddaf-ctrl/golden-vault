@@ -1,6 +1,6 @@
 'use client';
 
-import {useEffect,useState} from 'react';
+import {useEffect,useRef,useState} from 'react';
 
 type Entry={
   id:string;day:string;kind:string;actor:string;target:string|null;
@@ -18,6 +18,7 @@ function formatDay(d:string):string{
 export default function TeamActivity(){
   const [data,setData]=useState<ResponseData|null>(null);
   const [selected,setSelected]=useState('');
+  const manualSelection=useRef(false);
   const [error,setError]=useState('');
   useEffect(()=>{
     let mounted=true;
@@ -30,7 +31,8 @@ export default function TeamActivity(){
         const next=j as ResponseData;
         setData(next);
         // Keep a user-selected date; default to yesterday for newly loaded dashboards.
-        setSelected(previous=>previous&&next.days.includes(previous)?previous:(next.default_day||''));
+        setSelected(previous=>manualSelection.current && previous && next.days.includes(previous)
+          ? previous : (next.default_day||''));
         setError('');
       }catch{
         if(mounted)setError('ارتباط با گزارش عملیات برقرار نشد.');
@@ -69,7 +71,7 @@ export default function TeamActivity(){
     {error&&<p role="alert" className="danger">{error}</p>}
     <label htmlFor="gv-operations-day">📅 انتخاب تاریخ عملیات</label>
     <select id="gv-operations-day" value={selected}
-      onChange={e=>setSelected(e.target.value)}>
+      onChange={e=>{manualSelection.current=true;setSelected(e.target.value);}}>
       {(data?.days||[]).map(day=>
         <option key={day} value={day}>{formatDay(day)}{day===data?.default_day?' · روز قبل':''}</option>)}
     </select>
