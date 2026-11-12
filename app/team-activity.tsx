@@ -4,7 +4,7 @@ import {useEffect,useState} from 'react';
 
 type Entry={
   id:string;day:string;kind:string;actor:string;target:string|null;
-  actor_team:boolean;opponent:boolean;created_at:string;
+  actor_team:boolean;opponent:boolean;actor_team_name:string;created_at:string;
   sentence:string;operation_status:string;effect:string;status:string;
 };
 type ResponseData={
@@ -43,6 +43,8 @@ export default function TeamActivity(){
   const entries=(data?.items||[]).filter(e=>e.day===selected);
   const own=entries.filter(e=>e.actor_team);
   const rival=entries.filter(e=>!e.actor_team);
+  const adminView=entries.length>0&&entries.every(e=>e.opponent===false&&!e.actor_team);
+  const teamNames=Array.from(new Set(entries.map(e=>e.actor_team_name)));
   function renderRows(rows:Entry[],label:string){
     return <div style={{marginTop:15}}>
       <h3 style={{marginBottom:8}}>{label}</h3>
@@ -74,10 +76,13 @@ export default function TeamActivity(){
     {data&&!selected&&<p className="muted">هنوز روزی برای گزارش وجود ندارد.</p>}
     {selected&&<div className="card" style={{marginTop:12}}>
       <h3>گزارش عملیات {formatDay(selected)}</h3>
-      {entries.length===0?<p className="muted">در این روز هیچ عملیات قابل‌نمایشی وجود ندارد.</p>:<>
-        {renderRows(own,'🛡️ عملیات تیم خودی')}
-        {renderRows(rival,'⚔️ عملیات تیم مقابل')}
-      </>}
+      {entries.length===0?<p className="muted">در این روز هیچ عملیات قابل‌نمایشی وجود ندارد.</p>
+        : adminView ? teamNames.map(t=>
+          <div key={t}>{renderRows(entries.filter(e=>e.actor_team_name===t),'⚔️ عملیات '+t)}</div>)
+        : <>
+          {renderRows(own,'🛡️ عملیات تیم خودی')}
+          {renderRows(rival,'⚔️ عملیات تیم مقابل')}
+        </>}
       {data?.game_won&&<p className="muted">بازی پایان یافته و گزارش عملیات هر دو تیم قابل مشاهده است.</p>}
     </div>}
   </section>;
