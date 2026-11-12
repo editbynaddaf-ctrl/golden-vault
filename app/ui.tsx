@@ -473,6 +473,8 @@ const r = await fetch(
             </div>
           )}
 
+          <TeamActivity />
+
           <div className="card">
             <h2>🏅 سکه‌های فروش و رتبه‌بندی</h2>
             <p className="muted">مخصوص هفته فعال؛ شامل سکه‌های پایه فروش و پاداش تارگت و تاپ‌سلر، بدون محاسبه خریدها و انتقال سکه.</p>
@@ -942,7 +944,7 @@ const r = await fetch(
         </>
       )}
 
-      {!profile.is_admin && week && <TeamActivity />}
+
 
       {message && <div className="notice">{message}</div>}
       </main>
