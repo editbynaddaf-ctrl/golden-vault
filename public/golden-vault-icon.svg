@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+<rect width="512" height="512" rx="104" fill="#14110e"/>
+<rect x="26" y="26" width="460" height="460" rx="88" fill="#241b12" stroke="#b68a3f" stroke-width="8"/>
+<path d="M108 190 L159 322 L256 361 L353 322 L404 190 L315 251 L256 141 L197 251 Z" fill="#ebc577" stroke="#a4782b" stroke-width="8" stroke-linejoin="round"/>
+<path d="M185 301 L327 301" stroke="#ffedb7" stroke-width="16" stroke-linecap="round"/>
+<circle cx="256" cy="194" r="20" fill="#fff1c3"/>
+<text x="256" y="430" font-family="serif" font-weight="bold" font-size="44" fill="#f6d58c" text-anchor="middle">GV</text>
+</svg>
