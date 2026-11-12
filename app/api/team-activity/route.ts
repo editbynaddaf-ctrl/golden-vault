@@ -7,8 +7,10 @@ export const dynamic='force-dynamic';
 const headers={'Cache-Control':'private, no-store'};
 
 function tehranDate(date=new Date()):string {
-  return new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Tehran',year:'numeric',month:'2-digit',day:'2-digit'})
-    .format(date).replace(/\//g,'-');
+  const p=new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Tehran',
+    year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(date);
+  const part=(type:string)=>p.find(x=>x.type===type)?.value||'';
+  return `${part('year')}-${part('month')}-${part('day')}`;
 }
 function isSameOrBefore(date:string,now:string) {return date<=now;}
 function dayOffset(day:string,offset:number):string {
@@ -33,10 +35,11 @@ const operations:Record<string,string>={
  spy_key:'استعلام کلید',spy_shop:'استعلام خریدهای حریف',attack:'فرمان حمله',
  golden_day:'روز طلایی',
 };
-const roles:Record<string,string>={thief:'سارق',killer:'قاتل',guardian:'محافظ',commander:'فرمانده',spy:'جاسوس'};
+const roleLabels:Record<string,string>={thief:'سارق',killer:'قاتل',guardian:'محافظ',commander:'فرمانده',spy:'جاسوس'};
+const rivalActorLabels:Record<string,string>={thief:'سارق',killer:'قاتل',guardian:'محافظ',spy_role:'جاسوس',spy_key:'جاسوس',spy_shop:'جاسوس',attack:'فرمانده',golden_day:'فرمانده'};
 
 function describe(kind:string,actor:string,target:string|null,enemy:boolean,anonymous:boolean) {
-  const name=anonymous?(roles[kind]||operations[kind]||'بازیکن')+' حریف':actor;
+  const name=anonymous?(rivalActorLabels[kind]||'بازیکن')+' حریف':actor;
   if(kind==='thief')return `${name} از ${target||'یکی از بازیکنان'} سرقت کرد.`;
   if(kind==='killer')return `${name} به ${target||'یکی از بازیکنان'} حمله کرد.`;
   if(kind==='guardian')return `${name} از ${target||'یک هم‌تیمی'} محافظت کرد.`;
@@ -49,7 +52,7 @@ function describe(kind:string,actor:string,target:string|null,enemy:boolean,anon
 }
 type Entry={
  id:string;day:string;kind:string;actor:string;target:string|null;
- actor_team:boolean;opponent:boolean;created_at:string;
+ actor_team:boolean;opponent:boolean;actor_team_name:string;created_at:string;
  sentence:string;operation_status:string;effect:string;
  status:string;
 };
@@ -74,19 +77,21 @@ export async function GET(){
   const gameWon=Boolean(won);
 
   const [{data:players,error:playersError},{data:ops,error:opsError},
-    {data:ledger,error:ledgerError},{data:assignments,error:rolesError}]=await Promise.all([
+    {data:ledger,error:ledgerError},{data:teams,error:teamsError}]=await Promise.all([
       db.from('profiles').select('id,name,team_id').eq('is_admin',false),
       db.from('operations').select('id,actor_id,target_id,kind,day,status,result,created_at')
         .eq('week_id',week.id).order('created_at',{ascending:false}).limit(1000),
       db.from('coin_ledger').select('team_id,delta,settlement_key,source_type')
         .eq('week_id',week.id).eq('source_type','daily_settlement').limit(3000),
-      db.from('assignments').select('user_id,role').eq('week_id',week.id),
+      db.from('teams').select('id,name'),
     ]);
-  if(playersError||opsError||ledgerError||rolesError)throw playersError||opsError||ledgerError||rolesError;
+  if(playersError||opsError||ledgerError||teamsError)throw playersError||opsError||ledgerError||teamsError;
   const person=new Map((players||[]).map(p=>[p.id,p]));
-  const role=new Map((assignments||[]).map(a=>[a.user_id,a.role]));
+  const teamNames=new Map((teams||[]).map(t=>[t.id,t.name]));
   const team=me.team_id;
   const today=tehranDate();
+  const hour=Number(new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Tehran',hour:'2-digit',hourCycle:'h23'})
+    .format(new Date()));
   const yesterday=dayOffset(today,-1);
   const dates:string[]=[];
   // All days of this round can be chosen, including those with no operations.
@@ -106,9 +111,7 @@ export async function GET(){
     const opponent=Boolean(team&&!own);
     // During a live game: allied actions are available immediately.
     // Opponent actions targeting an ally are revealed only after 18:00 Tehran.
-    const time=new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Tehran',hour:'2-digit',hourCycle:'h23'}).format(new Date());
-    const hour=Number(time);
-    const opponentVisible=op.day<today||(op.day===today&&hour>=18);
+     const opponentVisible=op.day<today||(op.day===today&&hour>=18);
     if(!me.is_admin&&!gameWon&&!own&&!(targetedTeam&&opponentVisible))continue;
     const selfAction=op.actor_id===user.id;
     const revealResult=me.is_admin||gameWon||
@@ -161,7 +164,9 @@ export async function GET(){
         else if(d&&typeof d.found==='boolean')
           effect=d.found?'در زمان استعلام، تیم حریف کلید را پیدا کرده بود.':'در زمان استعلام، کلید هنوز توسط حریف پیدا نشده بود.';
         else if(typeof d?.role==='string')
-          effect=`نقش شناسایی‌شده: ${roles[d.role]||'نامشخص'}.`;
+          effect=(me.is_admin||gameWon||selfAction)
+            ?`نقش شناسایی‌شده: ${roleLabels[d.role]||'نامشخص'}.`
+            :'استعلام انجام شد؛ نتیجه فقط برای جاسوس قابل مشاهده است.';
         else if(kindIsSpy(op.kind))
           effect='استعلام انجام شد؛ نتیجه محرمانه فقط برای اجراکننده قابل مشاهده است.';
         else if(!settled)
@@ -176,6 +181,7 @@ export async function GET(){
     entries.push({
       id:op.id,day:op.day,kind:op.kind,actor:actorName,
       target:targetName,actor_team:own,opponent,
+      actor_team_name:teamNames.get(actor?.team_id||'')||'تیم نامشخص',
       created_at:op.created_at,
       sentence:describe(op.kind,actorName,targetName,opponent,anonymous),
       operation_status:operationStatus,effect,status:op.status,
