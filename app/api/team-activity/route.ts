@@ -148,13 +148,12 @@ export async function GET(){
         const amount=Math.max(credits,Math.abs(debits));
         if(opLedger.length>0){
           if(amount===0)effect='هیچ سکه‌ای بابت این عملیات منتقل نشد.';
-          else if(team && credits>0 && creditTeam===team)
-            effect=`${credits} سکه به تیم شما اضافه شد.`;
-          else if(team && debits<0 && debitTeam===team)
-            effect=`${Math.abs(debits)} سکه از تیم شما کسر شد و به تیم حریف منتقل شد.`;
-          else if(team && credits>0)
-            effect=`${credits} سکه به تیم حریف اضافه شد.`;
-          else effect=`${amount} سکه در نتیجه این عملیات جابه‌جا شد.`;
+          else if(credits>0 && debits<0)
+            effect=`${amount} سکه از ${teamNames.get(debitTeam)||'تیم پرداخت‌کننده'} به ${teamNames.get(creditTeam)||'تیم دریافت‌کننده'} منتقل شد.`;
+          else if(credits>0)
+            effect=`${credits} سکه به ${teamNames.get(creditTeam)||'تیم دریافت‌کننده'} اضافه شد.`;
+          else if(debits<0)
+            effect=`${Math.abs(debits)} سکه از ${teamNames.get(debitTeam)||'تیم پرداخت‌کننده'} کسر شد.`;
         }else if(outcome==='blocked_by_protection'||outcome==='guardian_immune'||
           outcome==='assassination_failed'||outcome==='invalid_target'||
           outcome==='canceled_by_assassination'||outcome==='game_ended')
@@ -162,7 +161,9 @@ export async function GET(){
         else if(outcome==='protected')
           effect='محافظت ثبت شد؛ این عملیات به‌تنهایی سکه‌ای جابه‌جا نمی‌کند.';
         else if(d&&typeof d.found==='boolean')
-          effect=d.found?'در زمان استعلام، تیم حریف کلید را پیدا کرده بود.':'در زمان استعلام، کلید هنوز توسط حریف پیدا نشده بود.';
+          effect=(me.is_admin||gameWon||selfAction)
+            ? (d.found?'در زمان استعلام، تیم حریف کلید را پیدا کرده بود.':'در زمان استعلام، کلید هنوز توسط حریف پیدا نشده بود.')
+            : 'استعلام انجام شد؛ نتیجه فقط برای جاسوس قابل مشاهده است.';
         else if(typeof d?.role==='string')
           effect=(me.is_admin||gameWon||selfAction)
             ?`نقش شناسایی‌شده: ${roleLabels[d.role]||'نامشخص'}.`
