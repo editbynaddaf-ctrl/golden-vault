@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import {actionLabels,operationDescription,statusLabel,operationResults} from './operation-labels';
 
 type TeamEvent = {
   id: string;
@@ -13,31 +14,6 @@ type TeamEvent = {
   status: string;
   outcome: string | null;
   private_detail: string | null;
-};
-
-const actionNames: Record<string, string> = {
-  thief: '🥷 سرقت',
-  killer: '⚔️ ترور',
-  guardian: '🛡️ محافظت',
-  spy_role: '👁️ شناسایی نقش',
-  spy_key: '👁️ استعلام کلید',
-  spy_shop: '👁️ بررسی خریدهای حریف',
-  attack: '⚔️ فرمان حمله',
-  golden_day: '☀️ روز طلایی',
-};
-
-const outcomeNames: Record<string, string> = {
-  protected: 'محافظت ثبت شد',
-  blocked_by_protection: 'حمله با محافظت خنثی شد',
-  guardian_immune: 'محافظ مصون بود',
-  commander_penalty_pending_sales: 'سرقت از فرمانده ناموفق شد',
-  guardian_penalty_pending_sales: 'ترور محافظ ناموفق شد',
-  robbery_success_pending_sales: 'سرقت موفق؛ اثر مالی وابسته به فروش',
-  assassination_success_pending_sales: 'ترور موفق؛ اثر مالی وابسته به فروش',
-  assassination_failed: 'ترور ناموفق',
-  canceled_by_assassination: 'عملیات به دلیل ترور لغو شد',
-  awaiting_sales: 'نتیجه مالی وابسته به فروش',
-  invalid_target: 'هدف نامعتبر',
 };
 
 export default function TeamActivity() {
@@ -76,17 +52,19 @@ export default function TeamActivity() {
       {events.map(e => (
         <article key={e.id} className="card" style={{ margin: '9px 0', padding: 14 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap' }}>
-            <strong>{actionNames[e.kind] ?? e.kind}</strong>
+            <strong>{actionLabels[e.kind] ?? 'عملیات بازی'}</strong>
             <span className="muted">{e.day}</span>
           </div>
-          <p style={{ margin: '7px 0' }}>
-            <strong>{e.actor}</strong>
-            {e.target ? ` ← هدف: ${e.target}` : ' — عملیات تیمی'}
-          </p>
-          <p className={e.outcome || e.private_detail ? 'success mini' : 'muted mini'}>
-            {e.private_detail ? e.private_detail : e.outcome ? (outcomeNames[e.outcome] ?? e.outcome) :
-              (e.actor_team ? 'نتیجه از ساعت ۱۲ قابل مشاهده است' : 'نتیجه از ساعت ۱۸ قابل مشاهده است')}
-          </p>
+          <p style={{ margin: '7px 0' }}>{operationDescription(e.kind,e.actor,e.target)}</p>
+          <p className="muted mini">وضعیت: {statusLabel(e.status)}</p>
+          {e.private_detail
+            ? <p className="success mini">{e.private_detail}</p>
+            : e.outcome
+              ? operationResults(JSON.stringify({outcome:e.outcome}),'resolved',e.kind)
+                  .map((line,i)=><p key={i} className="success mini">{line}</p>)
+              : <p className="muted mini">{e.actor_team
+                  ? 'نتیجه در زمان اعلام برای تیم شما نمایش داده می‌شود.'
+                  : 'نتیجه در زمان اعلام برای بازیکن هدف نمایش داده می‌شود.'}</p>}
         </article>
       ))}
     </section>
