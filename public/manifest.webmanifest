@@ -1,0 +1,22 @@
+{
+  "name": "Golden Vault | بازی استراتژیک فروش",
+  "short_name": "Golden Vault",
+  "description": "بازی استراتژیک رقابتی تیم‌های فروش",
+  "id": "/",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#101010",
+  "theme_color": "#23190e",
+  "orientation": "portrait",
+  "lang": "fa",
+  "dir": "rtl",
+  "icons": [
+    {
+      "src": "/golden-vault-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
