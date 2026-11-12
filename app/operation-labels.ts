@@ -75,6 +75,17 @@ export function operationResults(raw:unknown,status:string,kind:string):string[]
       .map(([name,v])=>`${equipmentLabels[name]||'تجهیز'}: ${v} عدد`);
     lines.push(purchases.length?`خریدهای حریف: ${purchases.join('، ')}.`:'تا زمان استعلام، خریدی برای حریف ثبت نشده بود.');
   }
+  const attack=asRecord(d.attack_details);
+  if(attack){
+    const own=safeNum(attack.own_sales);
+    const opponent=safeNum(attack.opponent_sales);
+    if(own!==null && opponent!==null)
+      lines.push(`مقایسه فروش روز حمله: تیم حمله‌کننده ${own} میلیون تومان، تیم حریف ${opponent} میلیون تومان.`);
+    if(typeof attack.success==='boolean')
+      lines.push(attack.success?'فرمان حمله موفق شد.':'فرمان حمله موفق نشد.');
+    const bonus=safeNum(attack.bonus_coins);
+    if(bonus!==null)lines.push(`سکه منتقل‌شده بابت حمله: ${bonus} سکه.`);
+  }
   const penalty=asRecord(d.penalty_details);
   if(penalty){
     if(typeof penalty.reason==='string'){
